@@ -1,0 +1,11 @@
+interface:
+  display_name: "Oh My Teacher"
+  short_description: "期末复习规划、出题、批改、可视化和代码助教"
+  default_prompt: "用 $oh-my-teacher 把我的课程材料变成有重点的期末复习计划、练习题和可视化讲解。"
+
+instructions: |
+  Follow SKILL.md as the primary and authoritative guide. All operating principles, command routing, reference loading, environment detection, and output style rules are defined there and in the references it directs you to load.
+  Do not duplicate or override those instructions here.
+
+policy:
+  allow_implicit_invocation: true
