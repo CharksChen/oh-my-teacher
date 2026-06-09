@@ -1,6 +1,6 @@
 # Review Plans and Study Maps
 
-Use this file for `/plan`, `/map`, `/cram`, multi-course planning, final review sheets, and progress heat maps.
+Use this file for `/plan`, `/map`, `/cram`, multi-course planning, final review sheets, and progress heat maps. For selecting retrieval, spacing, interleaving, elaboration, self-explanation, and dual coding, see `references/learning-strategies.md`.
 
 ## Study Map
 
@@ -45,6 +45,7 @@ Include:
 - Daily minimum line: tasks required for the goal.
 - Optional bonus line: tasks for a higher score.
 - Active recall every day.
+- Strategy label for each study block: retrieval, spaced review, interleaving, self-explanation, Socratic, Feynman, dual coding, or mock.
 - Error repair after practice.
 - Mock exam near the end.
 - Final 30-minute sheet.
@@ -55,6 +56,14 @@ Modes:
 - High-score: add hard variants, proofs, mixed problems, and timed full mocks.
 - Cram: remove low-yield reading, use last-page sheet, standard methods, and focused drills.
 - Multi-course: rank by exam date, difficulty, credit/importance, and current weakness.
+
+Default daily block structure:
+
+1. Pretest or retrieval warm-up before reading.
+2. Focused repair or explanation for the weakest point.
+3. Practice set, preferably interleaved after basics are stable.
+4. Error repair with self-explanation.
+5. SRS update and next due review.
 
 ## Cram Mode
 

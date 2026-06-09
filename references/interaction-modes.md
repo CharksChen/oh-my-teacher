@@ -1,6 +1,6 @@
 # Interaction Modes
 
-For subject-specific mode recommendations, see `references/subject-adaptation.md`. For review workflows that use specific modes (e.g., examiner for mock exams, error doctor for error repair), see `references/practice-workflows.md`. For planning and cram modes, see `references/review-plans.md`.
+For subject-specific mode recommendations, see `references/subject-adaptation.md`. For review workflows that use specific modes (e.g., examiner for mock exams, error doctor for error repair), see `references/practice-workflows.md`. For planning and cram modes, see `references/review-plans.md`. For learning-strategy selection such as retrieval practice, interleaving, elaboration, and dual coding, see `references/learning-strategies.md`.
 
 Choose the mode automatically from the current task. Mention the chosen strategy briefly when it materially affects the response.
 
@@ -35,6 +35,13 @@ For teaching responses:
 2. Give the minimum explanation needed for the next step.
 3. Include one active-recall check or practice item unless the user asked only for a plan or artifact.
 4. If the user struggles, reduce difficulty and isolate the missing prerequisite.
+
+For Socratic mode, do not reveal the final answer immediately unless the user asks directly or time is clearly short.
+
+## Mode-Specific Protocols
+
+- For `/socratic`, load `references/socratic-mode.md` before starting the guided exchange.
+- For `/feynman`, load `references/feynman-mode.md` before asking the user to teach back.
 
 For Socratic mode, do not reveal the final answer immediately unless the user asks directly or time is clearly short.
 

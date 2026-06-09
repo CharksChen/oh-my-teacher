@@ -1,6 +1,6 @@
 # Spaced Repetition
 
-Use this file for `/review-due`, SRS file handling, due-date calculation, and automatic SRS updates after `/quiz`, `/mock`, `/oral`, `/grade`, or `/fix`.
+Use this file for `/review-due`, SRS file handling, due-date calculation, and automatic SRS updates after `/quiz`, `/mock`, `/oral`, `/grade`, `/fix`, `/socratic`, or `/feynman`. For host fallbacks, see `references/environment-adaptation.md`.
 
 In agent shells, prefer `scripts/srs.py` for deterministic `init`, `update`, `due`, `list`, and `set-active` operations instead of hand-editing Markdown tables.
 
@@ -49,13 +49,14 @@ Fields:
 - **Score**: 1-5.
 - **Streak**: consecutive reviews with score >= 3; resets to 0 on score <= 2.
 - **Next Review**: ISO date for next review.
+- **Difficulty**: easy / medium / hard. Adjusts the base interval by a multiplier before computing Next Review.
 
 ## Date Source
 
 All scheduling depends on today's date.
 
 - Agent shell: obtain the current date from the environment before computing intervals or filtering due topics. Use the available platform command, not a hardcoded shell.
-- RAG notebook or plain chat: if today's date is not already known from the conversation, ask once before computing absolute dates.
+- RAG notebook, notes app, or plain chat: if today's date is not already known from the conversation, ask once before computing absolute dates.
 - If the date cannot be determined, store intervals relative to "last review + N days" and do not invent overdue counts.
 
 ## Interval Algorithm
@@ -63,17 +64,33 @@ All scheduling depends on today's date.
 When a topic is reviewed with score `S`:
 
 1. If `S <= 2`: set streak to 0 and next review to tomorrow.
-2. If `S >= 3`: increment streak and use:
+2. If `S >= 3`: increment streak and compute base interval:
 
-| Streak | Interval |
-|--------|----------|
+| Streak | Base Interval |
+|--------|---------------|
 | 1 | 1 day |
 | 2 | 3 days |
 | 3 | 7 days |
 | 4 | 14 days |
 | 5+ | 30 days |
 
-3. Update the existing row. If the topic is new, append a row.
+3. Adjust by difficulty multiplier:
+
+| Difficulty | Multiplier | Effect |
+|------------|-----------|--------|
+| easy | 1.4 | Review less often |
+| medium | 1.0 | Default |
+| hard | 0.6 | Review more often |
+
+`final_interval = max(1, int(base_interval * multiplier))`
+
+4. Update the existing row with the new score, streak, difficulty, and computed next review date. If the topic is new, append a row.
+
+Separately, the model may suggest difficulty changes:
+
+- After a topic is scored ≥ 4 three consecutive times → suggest bumping difficulty to `easy`.
+- After a topic is scored ≤ 2 twice in a row → suggest dropping difficulty to `hard`.
+- The user can always manually override via `--difficulty` on `srs.py update`.
 
 ## `/review-due`
 
@@ -83,7 +100,7 @@ When the user runs `/review-due`:
    - If `.oh-my-teacher/srs/` and `.oh-my-teacher/srs/_active` exist, read the active multi-course SRS file.
    - Otherwise read `.oh-my-teacher/srs-state.md` if it exists.
    - Preferred helper: `python scripts/srs.py due` or `python scripts/srs.py due --today YYYY-MM-DD` (the `--today` flag defaults to the system date when omitted).
-2. Plain chat: parse the last copyable SRS block.
+2. RAG notebook, notes app, or plain chat: parse the last copyable SRS block or note table.
 3. Determine today's date before filtering.
 4. Filter rows where `Next Review <= today`.
 5. Sort by overdue days descending, then lowest score first.
@@ -98,4 +115,4 @@ After each `/grade`, `/quiz`, `/mock`, `/oral`, or `/fix` answer:
 - Mention the update briefly with the next review date.
 - Preferred helper: `python scripts/srs.py update "topic" --score 4` (omit `--today` to use the system date).
 
-In plain chat, output the SRS table as a copyable Markdown block after each update.
+In RAG notebook, notes app, or plain chat, output the SRS table as a copyable Markdown block after each update. For notes apps, optional tags such as `#复习计划` and backlinks such as `[[极限]]` are useful when they do not clutter the table.

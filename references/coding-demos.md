@@ -1,6 +1,6 @@
 # Coding Demos
 
-For interaction mode selection when coding (coding assistant vs. visual-first), see `references/interaction-modes.md`. For grading rubrics for code questions, see `references/question-types.md`.
+For interaction mode selection when coding (coding assistant vs. visual-first), see `references/interaction-modes.md`. For grading rubrics for code questions, see `references/question-types.md`. For host fallbacks, see `references/environment-adaptation.md`.
 
 Use runnable demos to make abstract processes visible. Match the language and complexity to the user's course level.
 
@@ -14,6 +14,13 @@ Infer or ask:
 - Runtime constraints if any
 
 If unknown, default to simple Python for concept demos or basic C++ for C++ course review. Avoid advanced C++ features by default.
+
+Before generating any demo, verify the host environment's tool availability:
+
+- If you DO NOT have a python compiler/interpreter or shell tool in your actual available tool list, you MUST treat the environment as "plain-chat".
+- In plain-chat, notes-app, or RAG-notebook environments, NEVER output commands like `plt.show()` that expect a GUI window.
+- Always pair code with its expected output; the output itself is the primary teaching artifact, the code is for reference.
+- If the user asks you to "run" the code but you have no execution tool, explain that you can only show the code and expected output, then offer a variant question.
 
 ## Demo Types
 
@@ -68,6 +75,7 @@ For generated local demos, keep them as single-file artifacts when possible.
 
 - **Agent shell**: write a single-file script in the appropriate language, run it, capture output, and show the result. Default to `.py` for concept demos and basic C++ for C++ course review. Save plots to a file the student can open.
 - **RAG notebook**: emit a code block with the demo plus a separate fenced block with the expected output. If the notebook supports execution, the student can run it; if not, the expected output is the teaching artifact.
+- **Notes app**: emit Markdown-native code blocks, expected output, and a trace table. Add tags such as `#程序设计` or backlinks such as `[[指针]]` only when helpful.
 - **Plain chat**: same as RAG notebook — code block + expected output. Add one short walk-through of the key lines ("line 3 initializes the array, line 7 swaps…") so the student can read the code without executing it.
 
 Never assume the student can run code in a plain chat. Always pair code with expected output or a trace table.

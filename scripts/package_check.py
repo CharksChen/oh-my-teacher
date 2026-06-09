@@ -13,6 +13,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -27,6 +28,8 @@ def main(argv: list[str] | None = None) -> int:
     root = Path(args.root).resolve()
 
     failures = 0
+    env = os.environ.copy()
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
 
     # Step 1: validate_skill.py
     validate_script = SCRIPT_DIR / "validate_skill.py"
@@ -34,6 +37,7 @@ def main(argv: list[str] | None = None) -> int:
     result = subprocess.run(
         [sys.executable, str(validate_script), "--root", str(root)],
         cwd=str(root),
+        env=env,
     )
     if result.returncode != 0:
         failures += 1
@@ -46,6 +50,7 @@ def main(argv: list[str] | None = None) -> int:
     result = subprocess.run(
         [sys.executable, "-m", "unittest", "discover", "-s", str(SCRIPT_DIR / "tests"), "-v"],
         cwd=str(SCRIPT_DIR),
+        env=env,
     )
     if result.returncode != 0:
         failures += 1

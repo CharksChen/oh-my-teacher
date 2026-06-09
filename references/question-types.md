@@ -1,6 +1,6 @@
 # Question Types and Grading
 
-For mock exams and error repair workflows, see `references/practice-workflows.md`. For review plans and study maps, see `references/review-plans.md`. For subject-specific adaptation of question style and rigor, see `references/subject-adaptation.md`.
+For mock exams and error repair workflows, see `references/practice-workflows.md`. For review plans and study maps, see `references/review-plans.md`. For subject-specific adaptation of question style and rigor, see `references/subject-adaptation.md`. For retrieval practice, pretesting, interleaving, and elaborative prompts, see `references/learning-strategies.md`.
 
 ## Adaptive Difficulty
 
@@ -31,6 +31,8 @@ These two commands both ask questions but serve opposite goals; do not conflate 
 
 After `/diagnose`, recommend `/quiz` (or `/fix`) on the lowest-scoring chapter. The diagnostic calibrates the map; the quiz works the territory.
 
+Treat `/diagnose` as pretesting when the student has not reviewed yet: keep it low-stakes, explain that misses guide attention, and avoid interpreting a miss as failure.
+
 ## Generation Defaults
 
 Always align questions with course profile, subject adaptation, and user level.
@@ -43,6 +45,8 @@ For each question set, include:
 - Answer
 - Explanation or rubric
 - Common mistake
+
+For adaptive `/quiz`, include a method-recognition or interleaved question once the student answers 2-3 basic questions correctly. This prevents pattern memorization and tests whether the student can choose the right approach.
 
 ## Paper Exam Types
 
@@ -85,6 +89,20 @@ For an exam-prep tool, a false positive (marking a wrong answer correct) is more
 - When genuinely uncertain between two scores, choose the lower one and explain the gap, rather than rounding up.
 - Do not award full marks unless the answer would survive a strict grader: complete, correct, and with no omitted conditions or untested edges.
 - Never invent partial credit the rubric does not support, and never soften a deduction to be encouraging — accurate feedback is the kindness here.
+
+### Double-Pass Grading Protocol
+
+Strict grading is only useful when it is *accurate*. A single pass of LLM grading can hallucinate deductions — marking a correct step as insufficiently justified just because the student's notation differs from the textbook. Apply a double-pass process to every graded response:
+
+1. **Draft pass**: Produce an initial score, deduction list, and rubric report.
+2. **Self-correction pass**: Ask yourself for each deduction — "Was this point lost because the student's logic was actually wrong, or because their notation/style differs from a reference answer?"
+3. **Finalize**: If the deduction was style-based (different variable name, non-standard but equivalent notation, omitted intermediate step that is obvious from context), **restore the point** and add a Style Note instead:
+
+   > Style Note: In exams, graders typically prefer writing the intermediate step explicitly — worth 1 mark for completeness.
+
+   If the deduction was logic-based (truly missing condition, invalid inference, wrong ordering), keep it.
+
+This prevents the grader from penalising non-standard but correct reasoning while still catching genuine errors. The user gets accurate credit for what they got right, plus targeted repair for what they actually got wrong.
 
 ### Output
 

@@ -152,6 +152,62 @@ class ParseCardsTests(unittest.TestCase):
         self.assertEqual(cards[2], ("c", "d", "", ""))
         self.assertEqual(cards[3], ("e", "f", "", ""))
 
+    def test_bidirectional_emits_two_cards(self):
+        text = "Q: [Bi-directional] What is the derivative of x^2?\nA: 2x\nTags: calculus"
+        cards = parse_cards(text)
+        self.assertEqual(len(cards), 2)
+        self.assertEqual(cards[0][0], "What is the derivative of x^2?")
+        self.assertEqual(cards[0][1], "2x")
+        self.assertEqual(cards[0][2], "calculus")
+        self.assertEqual(cards[1][0], "2x")
+        self.assertEqual(cards[1][1], "What is the derivative of x^2?")
+        self.assertEqual(cards[1][2], "calculus")
+
+    def test_bidirectional_with_front_label(self):
+        text = "Front: [Bi-directional] definition\nBack: meaning"
+        cards = parse_cards(text)
+        self.assertEqual(len(cards), 2)
+        self.assertEqual(cards[0][0], "definition")
+        self.assertEqual(cards[0][1], "meaning")
+        self.assertEqual(cards[1][0], "meaning")
+        self.assertEqual(cards[1][1], "definition")
+
+    def test_bidirectional_without_back_does_not_reverse(self):
+        text = "Q: [Bi-directional] just front\nA:"
+        cards = parse_cards(text)
+        # The A: value is empty string = falsy, so no reversed card is emitted
+        self.assertEqual(len(cards), 1)
+        self.assertEqual(cards[0][0], "just front")
+        self.assertEqual(cards[0][1], "")
+
+    def test_bidirectional_with_expand_cloze(self):
+        text = "Cloze: [Bi-directional] {{c1::A}} = {{c2::B}}\nA: note"
+        cards = parse_cards(text, expand_cloze=True)
+        # 2 expanded clozes + 2 reversed (the A: note is overridden by the
+        # expanded back in bidirectional mode since exp_back is truthy)
+        self.assertEqual(len(cards), 4)
+        self.assertEqual(cards[0][0], "____ = [B]")
+        self.assertEqual(cards[0][1], "[A] = [B]")
+        self.assertEqual(cards[1][0], "[A] = [B]")
+        self.assertEqual(cards[1][1], "____ = [B]")
+        self.assertEqual(cards[2][0], "[A] = ____")
+        self.assertEqual(cards[2][1], "[A] = [B]")
+        self.assertEqual(cards[3][0], "[A] = [B]")
+        self.assertEqual(cards[3][1], "[A] = ____")
+
+    def test_bidirectional_cli(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            inp = Path(tmp) / "cards.md"
+            out = Path(tmp) / "cards.csv"
+            inp.write_text("Q: [Bi-directional] hello\nA: world\nTags: greet", encoding="utf-8")
+            result = _run_cli([str(inp), str(out)])
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Exported 2 cards", result.stdout)
+            rows = list(csv.reader(out.read_text(encoding="utf-8-sig").splitlines()))
+            self.assertEqual(rows[0], ["Front", "Back", "Tags", "Deck"])
+            self.assertEqual(rows[1], ["hello", "world", "greet", ""])
+            self.assertEqual(rows[2], ["world", "hello", "greet", ""])
+
 
 class SkippedBlockWarningTests(unittest.TestCase):
     """Tests for the warning mechanism when blocks are skipped."""

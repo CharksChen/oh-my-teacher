@@ -12,7 +12,7 @@ Maintain and update a compact snapshot across turns. Show it at the start of maj
 - **Assessment**: [format]
 - **Days left**: [N days or unknown]
 - **Level**: [beginner / shaky / basic ok / high-score / pass-only]
-- **Environment**: [agent-shell / rag-notebook / plain-chat]
+- **Environment**: [agent-shell / rag-notebook / notes-app / plain-chat / unknown]
 - **Materials**: [uploaded sources or gaps]
 - **LaTeX**: [rendered / plain-text / not applicable]
 - **Weak points**: [tag1, tag2]
@@ -31,7 +31,7 @@ Update rules:
 - After `/group-quiz`: aggregate per-participant weak points; update active student's **Weak points** and **Accuracy**
 - After `/summary`: consolidate session topics into **Completed**, refresh **Accuracy** summary, set **Last action** to `/summary`, update **Next recommended**
 - After `/profile` or new course info: rebuild the full snapshot; set **Level** from user declaration (high-score / pass-only are goals, not performance metrics)
-- After environment detection or a clear environment change: refresh **Environment**
+- After environment detection or a clear environment change: refresh **Environment** using `references/environment-adaptation.md`
 - For mathematics courses, ask at session start which LaTeX rendering the user needs (rendered / plain-text); set **LaTeX** accordingly
 - Keep **Weak points** short: topic labels, not paragraphs
 

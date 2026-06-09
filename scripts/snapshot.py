@@ -15,6 +15,20 @@ from pathlib import Path
 
 SNAPSHOT_START = "## Current Course Snapshot"
 SNAPSHOT_FIELD_RE = re.compile(r"^-\s+\*\*(?P<key>[^*]+)\*\*:\s*(?P<value>.*)$")
+REQUIRED_FIELDS = {
+    "course",
+    "assessment",
+    "days_left",
+    "level",
+    "environment",
+    "materials",
+    "latex",
+    "weak_points",
+    "completed",
+    "accuracy",
+    "last_action",
+    "next_recommended",
+}
 
 
 def slugify(course: str) -> str:
@@ -157,6 +171,44 @@ def cmd_set_active(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_validate(args: argparse.Namespace) -> int:
+    """Validate snapshot format and report missing or malformed fields."""
+    workspace = Path(args.workspace).resolve()
+    slug = args.slug
+    if slug is None and args.active:
+        active_file = active_path(workspace)
+        if not active_file.exists():
+            print("No active snapshot is set.", file=sys.stderr)
+            return 1
+        slug = active_file.read_text(encoding="utf-8").strip()
+    path = snapshot_path(workspace, slug)
+    if not path.exists():
+        print(f"Snapshot not found: {path}", file=sys.stderr)
+        return 1
+
+    text = path.read_text(encoding="utf-8")
+    if SNAPSHOT_START not in text:
+        print(f"ERROR: Snapshot does not contain '{SNAPSHOT_START}' heading.", file=sys.stderr)
+        return 1
+
+    fields = parse_snapshot(text)
+    field_keys = set(fields.keys())
+    missing = REQUIRED_FIELDS - field_keys
+    unknown = field_keys - REQUIRED_FIELDS
+
+    if missing:
+        print(f"WARNING: Missing {len(missing)} field(s): {', '.join(sorted(missing))}", file=sys.stderr)
+    if unknown:
+        print(f"NOTE: Extra field(s): {', '.join(sorted(unknown))}", file=sys.stderr)
+
+    for key, value in sorted(fields.items()):
+        print(f"  {key}: {value}")
+
+    if args.strict and missing:
+        return 1
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Manage Oh My Teacher course snapshots.")
     parser.add_argument(
@@ -190,6 +242,12 @@ def build_parser() -> argparse.ArgumentParser:
     active.add_argument("--slug", help="Explicit slug.")
     active.add_argument("--require-exists", action="store_true", help="Fail unless the snapshot file already exists.")
     active.set_defaults(func=cmd_set_active)
+
+    validate = sub.add_parser("validate", help="Check snapshot format and report missing fields.")
+    validate.add_argument("--slug", help="Course slug. If omitted, single-course snapshot is validated unless --active is given.")
+    validate.add_argument("--active", action="store_true", help="Validate the active multi-course snapshot.")
+    validate.add_argument("--strict", action="store_true", help="Return non-zero exit code if any required field is missing.")
+    validate.set_defaults(func=cmd_validate)
 
     return parser
 

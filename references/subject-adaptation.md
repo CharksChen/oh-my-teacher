@@ -18,15 +18,23 @@ For mathematical analysis, emphasize epsilon-delta logic, sequences/functions, c
 
 ### LaTeX Rendering
 
-At the start of a math course session, ask the user which LaTeX rendering target they need (rendered / plain-text), then set the **LaTeX** field in the Current Course Snapshot and keep it consistent for the rest of the session.
-
-Default to LaTeX source for formulas, definitions, and derivations:
+Default to LaTeX source for formulas, definitions, and derivations.
 
 - Inline: `$f'(x) = \lim_{h \to 0} \frac{f(x+h)-f(x)}{h}$`
 - Display: `$$ \int_a^b f(x)\,dx = F(b) - F(a) $$`
 - Theorems and aligned steps: use `aligned` / `cases` / `matrix` environments when needed.
 
-When the target channel does not render LaTeX (plain chat clients, some flashcard apps, code blocks without math support), or if the user selects plain-text mode, offer this plain-text fallback:
+#### LaTeX Auto-Detection
+
+Do not ask "需要哪种渲染方式" — most students do not know whether their client renders LaTeX. Instead, output a small test formula once at the start of a math session:
+
+> 我将在回答中使用 $\LaTeX$ 公式。如果您能正常看到上方的"$\int_a^b$"为排版格式，请回复 **1**；如果看到 `$$` 原始代码或乱码，请回复 **2**（我将切换为纯文本格式）。
+
+- If the user replies **1** or does not object, keep LaTeX source for the rest of the session. Set the Current Course Snapshot `LaTeX: rendered`.
+- If the user replies **2**, switch to plain-text fallback below for all future formulas. Set `LaTeX: plain-text`.
+- Detect the environment automatically: agent-shell environments with known tool support default to rendered; plain-chat defaults to plain-text unless the test formula renders.
+
+When the target channel does not render LaTeX (plain chat clients, some flashcard apps, code blocks without math support), or when auto-detection resolves to plain-text mode, offer this fallback:
 
 - `f'(x) = lim_{h->0} [f(x+h) - f(x)] / h`
 - `int_a^b f(x) dx = F(b) - F(a)`
@@ -43,6 +51,20 @@ Use:
 - Worked examples and variants
 
 Prefer visual or animation support for motion, fields, oscillation, transforms, feedback loops, and circuit behavior.
+
+## Digital Logic and Circuits
+
+Examples: 数字电路与逻辑设计, logic design, combinational logic, sequential logic, FPGA basics.
+
+Use:
+
+- Truth tables before Boolean simplification when the student's foundation is shaky.
+- Karnaugh maps, minterms/maxterms, don't-care conditions, and algebraic simplification side by side.
+- Timing diagrams for flip-flops, counters, registers, and finite-state machines.
+- State table -> state diagram -> next-state logic -> output logic as the default FSM workflow.
+- Common traps: active-high vs. active-low, edge-triggered vs. level-sensitive, setup/hold intuition, asynchronous reset, invalid states, and missing don't-care constraints.
+
+Prefer dual coding: formula/table plus diagram. In plain chat or notes apps, use Markdown truth tables and ASCII timing sketches.
 
 ## Programming and Computer Science
 
@@ -83,6 +105,13 @@ Use:
 - Active recall through short-answer and essay-outline prompts
 
 Grade essays by thesis clarity, concept accuracy, structure, evidence, and course vocabulary.
+
+For 马克思主义基本原理 and similar politics courses, emphasize:
+
+- Concept distinction: materialism vs. idealism, dialectics vs. metaphysics, use value vs. value, concrete labor vs. abstract labor.
+- Short-answer templates: definition -> relation -> significance -> common misconception.
+- Essay structure: thesis -> principle -> analysis -> real/course example -> conclusion.
+- Avoid empty slogans; require course vocabulary and logical links.
 
 ## Foreign Language
 

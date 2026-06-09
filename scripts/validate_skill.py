@@ -8,6 +8,7 @@ ordinary agent shells before packaging or after edits.
 from __future__ import annotations
 
 import argparse
+import ast
 import re
 import sys
 from pathlib import Path
@@ -72,6 +73,27 @@ def check(condition: bool, errors: list[str], message: str) -> None:
         errors.append(message)
 
 
+def course_template_keys(path: Path) -> set[str]:
+    tree = ast.parse(read_text(path), filename=str(path))
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name) and target.id == "TEMPLATES":
+                    value = ast.literal_eval(node.value)
+                    if isinstance(value, dict):
+                        return {str(key) for key in value}
+        if (
+            isinstance(node, ast.AnnAssign)
+            and isinstance(node.target, ast.Name)
+            and node.target.id == "TEMPLATES"
+            and node.value is not None
+        ):
+            value = ast.literal_eval(node.value)
+            if isinstance(value, dict):
+                return {str(key) for key in value}
+    raise ValueError("TEMPLATES dict not found.")
+
+
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
 
@@ -89,6 +111,7 @@ def validate(root: Path) -> list[str]:
         "srs.py",
         "validate_skill.py",
         "package_check.py",
+        "course_templates.py",
     ]
     scripts_dir = root / "scripts"
     for name in required_scripts:
@@ -100,13 +123,33 @@ def validate(root: Path) -> list[str]:
     if errors:
         return errors
 
+    required_references = [
+        "INDEX.md",
+        "course-profiles.md",
+        "environment-adaptation.md",
+        "materials-ingestion.md",
+        "subject-adaptation.md",
+        "interaction-modes.md",
+        "socratic-mode.md",
+        "feynman-mode.md",
+        "learning-strategies.md",
+        "course-templates.md",
+    ]
+    refs_dir = root / "references"
+    for name in required_references:
+        check(
+            (refs_dir / name).exists(),
+            errors,
+            f"Missing required reference: references/{name}.",
+        )
+
     try:
         fm = frontmatter(read_text(skill_path))
     except ValueError as exc:
         errors.append(str(exc))
         fm = {}
     check(set(fm) >= {"name", "description"}, errors, "SKILL.md frontmatter must contain at least name and description.")
-    allowed_keys = {"name", "description", "when"}
+    allowed_keys = {"name", "description"}
     extra_keys = set(fm) - allowed_keys
     check(not extra_keys, errors, "SKILL.md frontmatter has unrecognized keys: " + ", ".join(sorted(extra_keys)))
     check(fm.get("name") == "oh-my-teacher", errors, "SKILL.md frontmatter name must be oh-my-teacher.")
@@ -131,6 +174,8 @@ def validate(root: Path) -> list[str]:
         "/plan",
         "/map",
         "/explain",
+        "/socratic",
+        "/feynman",
         "/quiz",
         "/mock",
         "/oral",
@@ -176,6 +221,22 @@ def validate(root: Path) -> list[str]:
     check("SKILL.md" in agent_text, errors, "agents/openai.yaml instructions should reference SKILL.md as the primary guide.")
     check("Follow SKILL.md" in agent_text or "Follow the SKILL.md" in agent_text, errors, "agents/openai.yaml instructions should tell the agent to follow SKILL.md rather than duplicate its rules.")
 
+    agent_dir = root / "agents"
+    dangerous_reasoning_patterns = [
+        "write your reasoning chain",
+        "chain-of-thought",
+        "use cot",
+        "<thought>",
+        "推理链",
+        "思维链",
+    ]
+    for path in sorted(agent_dir.glob("*")):
+        if path.suffix.lower() not in {".yaml", ".yml", ".json"}:
+            continue
+        text = read_text(path).lower()
+        hits = [pattern for pattern in dangerous_reasoning_patterns if pattern in text]
+        check(not hits, errors, f"{path.relative_to(root)} asks for hidden reasoning disclosure: {', '.join(hits)}")
+
     # Stale-reference checks
     compat_path = root / "references" / "review-workflows.md"
     if compat_path.exists():
@@ -198,6 +259,25 @@ def validate(root: Path) -> list[str]:
         # Check for mentions of the old single-file review-workflows as a substantive source
         if "review-workflows.md" in readme_text and "compatibility" not in readme_text.lower() and "redirect" not in readme_text.lower():
             errors.append("README.md mentions review-workflows.md without noting it is a compatibility/redirect entry.")
+
+    try:
+        required_templates = {
+            "advanced-math",
+            "physics",
+            "programming-c-cpp",
+            "digital-logic",
+            "marxism-basic-principles",
+        }
+        missing_templates = sorted(required_templates - course_template_keys(root / "scripts" / "course_templates.py"))
+        check(not missing_templates, errors, "Missing course templates: " + ", ".join(missing_templates))
+    except Exception as exc:
+        errors.append(f"Could not inspect scripts/course_templates.py: {exc}")
+
+    examples_dir = root / "examples"
+    if examples_dir.exists():
+        example_text = "\n".join(read_text(path) for path in examples_dir.glob("*.md"))
+        check("/socratic" in example_text, errors, "examples/ should include a /socratic usage example.")
+        check("/feynman" in example_text, errors, "examples/ should include a /feynman usage example.")
 
     return errors
 

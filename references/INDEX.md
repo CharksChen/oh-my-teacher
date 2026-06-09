@@ -7,9 +7,11 @@ Load the relevant reference file(s) before executing any command. This index is 
 | Priority | File | Purpose | Load When |
 |----------|------|---------|-----------|
 | 1 | `course-profiles.md` | Current Course Snapshot, multi-course handling, persistence format | `/profile`, `/materials`, `/diagnose`, `/plan`, `/map`, `/mock`, `/grade`, `/fix`, `/quiz`, `/oral`, `/group-quiz`, `/summary`, `/resume`, course switch |
-| 2 | `materials-ingestion.md` | Ingest PDFs, PPTs, notes, past papers; extract knowledge inventory and gaps | `/materials` or when user uploads course files |
-| 3 | `subject-adaptation.md` | Adapt rigor, notation, examples, and visuals per subject family | Any review task after course profile is built |
-| 4 | `interaction-modes.md` | Select teaching mode: Socratic, examiner, cram, etc. | Before generating questions, explanations, feedback, or mode switches |
+| 2 | `environment-adaptation.md` | Detect host capabilities and choose fallbacks | Any task involving files, retrieval, shell/scripts, persistence, citations, visuals, code demos, exports, or unknown host |
+| 3 | `materials-ingestion.md` | Ingest PDFs, PPTs, notes, past papers; extract knowledge inventory and gaps | `/materials` or when user uploads course files |
+| 4 | `subject-adaptation.md` | Adapt rigor, notation, examples, and visuals per subject family | Any review task after course profile is built |
+| 5 | `interaction-modes.md` | Select teaching mode: Socratic, examiner, cram, etc. | Before generating questions, explanations, feedback, or mode switches |
+| 6 | `learning-strategies.md` | Evidence-informed learning strategies and selection rules | `/plan`, `/quiz`, `/fix`, `/socratic`, `/feynman`, `/flashcards`, or when choosing how to study |
 
 Only load files from `examples/` when the user asks for sample sessions, example outputs, behavior comparisons, or regression/reference behavior.
 
@@ -18,25 +20,27 @@ Only load files from `examples/` when the user asks for sample sessions, example
 | Command | Description | Primary Reference | Secondary References |
 |---------|-------------|-------------------|---------------------|
 | `/help` | List commands with one-line descriptions and usage examples, grouped by stage | This index | - |
-| `/profile` | Build a course profile and ask only essential missing questions | `course-profiles.md` | - |
-| `/materials` | Ingest uploaded or pasted course files; summarize, update profile, list gaps | `materials-ingestion.md` | `course-profiles.md` |
+| `/profile` | Build a course profile and ask only essential missing questions | `course-profiles.md` | `course-templates.md`, `scripts/course_templates.py` |
+| `/materials` | Ingest uploaded or pasted course files; summarize, update profile, list gaps | `materials-ingestion.md` | `course-profiles.md`, `environment-adaptation.md` |
 | `/paper` | Optimize review for closed-book or open-book paper exams | `course-profiles.md` | `subject-adaptation.md` |
 | `/lab` | Optimize review for lab exams, experiments, reports, and viva questions | `course-profiles.md` | `subject-adaptation.md` |
 | `/diagnose` | Run a 5-question rapid assessment across top chapters | `question-types.md` | `course-profiles.md`, `practice-workflows.md` |
 | `/plan` | Generate a realistic 1/3/7/14/30-day review plan | `review-plans.md` | `course-profiles.md`, `subject-adaptation.md` |
 | `/map` | Produce a concept map, exam map, formulas, definitions, and priorities | `review-plans.md` | `course-profiles.md` |
 | `/explain [topic]` | Explain a single concept with definition, intuition, example, and recall prompt | `subject-adaptation.md` | `interaction-modes.md` |
+| `/socratic [topic]` | Socratic tutoring: one focused question at a time, hint ladder, assumptions, counterexamples, and student summary | `socratic-mode.md` | `interaction-modes.md`, `learning-strategies.md`, `subject-adaptation.md` |
+| `/feynman [topic]` | Feynman technique: student teaches, AI plays curious freshman, then grades the explanation | `feynman-mode.md` | `interaction-modes.md`, `subject-adaptation.md` |
 | `/quiz` | Drill with adaptive questions | `question-types.md` | `interaction-modes.md`, `subject-adaptation.md`, `course-profiles.md` |
 | `/mock` | Generate a timed mock final with answers and rubric | `practice-workflows.md` | `question-types.md`, `course-profiles.md` |
 | `/oral` | Rehearse an oral exam with progressive questions and feedback | `practice-workflows.md` | `interaction-modes.md`, `subject-adaptation.md` |
 | `/grade` | Grade a user answer and diagnose mistakes | `question-types.md` | `course-profiles.md`, `practice-workflows.md`, `spaced-repetition.md` |
 | `/fix` | Repair weak points with mini-lessons and variant questions | `practice-workflows.md` | `question-types.md`, `subject-adaptation.md` |
-| `/flashcards` | Create active-recall cards; export CSV/TSV with `scripts/export_flashcards.py` when requested | `SKILL.md` | `practice-workflows.md` |
+| `/flashcards` | Create active-recall cards; export CSV/TSV with `scripts/export_flashcards.py` when requested | `SKILL.md` | `practice-workflows.md`, `learning-strategies.md`, `environment-adaptation.md` |
 | `/review-due` | Check spaced-repetition schedule and list topics due today | `spaced-repetition.md` | `course-profiles.md` |
 | `/group-quiz` | Run a multi-student quiz session | `group-study.md` | `question-types.md`, `subject-adaptation.md` |
-| `/visual` | Create diagrams, image prompts, or visual explanations | `visual-generation.md` | `subject-adaptation.md` |
-| `/video` | Create storyboard, animation plan, or video API workflow | `visual-generation.md` | - |
-| `/code-demo` | Create runnable code demos or algorithm visualizations | `coding-demos.md` | `subject-adaptation.md` |
+| `/visual` | Create diagrams, image prompts, or visual explanations | `visual-generation.md` | `subject-adaptation.md`, `environment-adaptation.md` |
+| `/video` | Create storyboard, animation plan, or video API workflow | `visual-generation.md` | `environment-adaptation.md` |
+| `/code-demo` | Create runnable code demos or algorithm visualizations | `coding-demos.md` | `subject-adaptation.md`, `environment-adaptation.md` |
 | `/cram` | Use exam-near rescue mode and prioritize scoring yield | `review-plans.md` | `interaction-modes.md` |
 | `/resume` | Restore context from a pasted Course Snapshot block | `course-profiles.md` | - |
 | `/summary` | Print a session digest: topics practiced, accuracy changes, weak points, SRS updates, and next step | `practice-workflows.md` | `course-profiles.md`, `spaced-repetition.md` |
@@ -80,6 +84,8 @@ When the user runs `/help`, use this exact structure:
 | Command | Description |
 |---------|-------------|
 | /explain [topic] | Explain one concept |
+| /socratic [topic] | Guided one-question-at-a-time tutoring |
+| /feynman [topic] | Teach the concept back (Feynman technique) |
 | /visual | Diagrams and visual explanations |
 | /video | Storyboard or animation plan |
 | /code-demo | Runnable code demo |
@@ -103,23 +109,28 @@ Type any command or describe what you need in natural language.
 
 ## Environment Fallbacks
 
-| Command | Agent shell | RAG notebook | Plain chat |
-|---------|-------------|--------------|------------|
-| `/materials` | Read files; use PDF/PPT/text tooling when available | Cite from document context | Ask student to paste chapter text or use OCR before continuing |
-| `/flashcards` | Write Markdown, then run `scripts/export_flashcards.py` | Emit Markdown cards inline | Emit Markdown cards inline |
-| `/visual` | Mermaid, HTML, Manim, Python plot, or image prompt as appropriate | Mermaid or ASCII inline | ASCII diagrams or numbered step lists; do not assume image API |
-| `/video` | Storyboard plus Manim/HTML Canvas plan or file when tools exist | Storyboard inline | Storyboard inline only; never call video API |
-| `/code-demo` | Write and run a file; show output | Code block plus expected output | Code block plus expected output; offer line-by-line walkthrough |
-| `/plan` | Write `plan.md` when useful | Plan inline | Plan inline plus copy/pin reminder when needed |
-| `/map` | Mermaid or Markdown file when useful | Mermaid or ASCII inline | ASCII concept map |
-| `/mock` | Write `mock.md` and `answer.md` when useful | Mock inline | Mock inline with rubric in the same response |
-| `/grade` | Read answer file and write graded artifact when useful | Grade inline with quotes | Grade inline with quotes |
-| `/explain`, `/quiz`, `/oral`, `/fix`, `/group-quiz` | Conversational by default | Conversational by default | Conversational by default |
+For detailed fallbacks, load `environment-adaptation.md`. This compact table is the routing overview:
+
+| Command | Agent shell | RAG notebook | Notes app | Plain chat |
+|---------|-------------|--------------|-----------|------------|
+| `/materials` | Read files; use PDF/PPT/text tooling when available | Cite from document context | Ingest Markdown notes, backlinks, tags, pasted excerpts | Ask student to paste chapter text or OCR screenshots |
+| `/flashcards` | Write Markdown, then run `scripts/export_flashcards.py` | Emit Markdown cards inline | Emit Markdown cards with tags/backlinks | Emit Markdown cards inline |
+| `/visual` | Mermaid, HTML, Manim, Python plot, or image prompt as appropriate | Mermaid or ASCII inline | Mermaid/Markdown tables if supported; otherwise ASCII | ASCII diagrams or numbered step lists |
+| `/video` | Storyboard plus Manim/HTML Canvas plan or file when tools exist | Storyboard inline | Storyboard Markdown | Storyboard inline only; never call video API |
+| `/code-demo` | Write and run a file; show output | Code block plus expected output | Code block plus trace note | Code block plus expected output and walkthrough |
+| `/plan` | Write `plan.md` when useful | Plan inline | Markdown plan with tags/backlinks | Plan inline plus copy/pin reminder |
+| `/map` | Mermaid or Markdown file when useful | Mermaid or ASCII inline | Mermaid/Markdown concept map | ASCII concept map |
+| `/mock` | Write `mock.md` and `answer.md` when useful | Mock inline | Mock as Markdown note | Mock inline with rubric |
+| `/grade` | Read answer file and write graded artifact when useful | Grade inline with quotes/citations | Grade inline with `#错题` tags | Grade inline with quotes |
+| `/explain`, `/socratic`, `/feynman`, `/quiz`, `/oral`, `/fix`, `/group-quiz` | Conversational by default | Conversational by default | Markdown-native conversational output | Conversational by default |
 
 ## File Overview
 
 ### `course-profiles.md`
 Course profile construction and maintenance. Contains the Current Course Snapshot template, field update rules, paper/lab/coding/oral exam optimization, multi-course snapshots, and the exact on-disk snapshot format.
+
+### `environment-adaptation.md`
+Host capability detection and fallbacks for Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work, NotebookLM, ima, Obsidian, notes apps, RAG notebooks, and ordinary chat boxes.
 
 ### `materials-ingestion.md`
 How to ingest course files. Covers PDF skill fallback, extraction targets, output contract, incremental ingestion, multi-file merging, and environment-specific ingestion.
@@ -129,6 +140,15 @@ Subject-specific defaults for Mathematics, Physics, CS, Chemistry/Biology/Medici
 
 ### `interaction-modes.md`
 Teaching modes with selection rules, mixed-mode combinations, response contracts, and mode switching.
+
+### `socratic-mode.md`
+Detailed `/socratic` protocol: one focused question, hint ladder, assumption probes, counterexamples, student summary, and teacher close.
+
+### `feynman-mode.md`
+Detailed `/feynman` protocol: teach-back, curious freshman probing, grading, re-teach prompt, repair card, and SRS update.
+
+### `learning-strategies.md`
+Evidence-informed learning strategy guide: retrieval practice, spacing, interleaving, elaboration, self-explanation, concrete examples, dual coding, pretesting, and analogical comparison.
 
 ### `review-plans.md`
 Study maps, review plans, cram mode, progress heat maps, and last-page sheets.
@@ -153,3 +173,6 @@ Visual selection guide, environment-aware visual matrix, ASCII conventions, imag
 
 ### `coding-demos.md`
 Runnable demo guidelines: language inference, algorithm traces, data structure state, simulations, debugging, beginner constraints, animation choices, and environment-aware demo forms.
+
+### `course-templates.md`
+Pre-built course profiles for quick onboarding via `scripts/course_templates.py`. Contains six common university course templates (数据结构与算法, 数学分析, 线性代数, 计算机网络, 操作系统, 大学物理).

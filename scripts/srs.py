@@ -10,8 +10,10 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-HEADER = ["Topic", "Last Review", "Score", "Streak", "Next Review"]
+HEADER = ["Topic", "Last Review", "Score", "Streak", "Next Review", "Difficulty"]
 INTERVALS = {1: 1, 2: 3, 3: 7, 4: 14}
+DIFFICULTY_MULTIPLIER = {"easy": 1.4, "medium": 1.0, "hard": 0.6}
+LEVEL_LABELS = {"easy": "简单", "medium": "中等", "hard": "困难"}
 
 
 @dataclass
@@ -21,6 +23,7 @@ class Row:
     score: int
     streak: int
     next_review: str
+    difficulty: str = "medium"
 
 
 def parse_date(value: str) -> dt.date:
@@ -64,7 +67,6 @@ def resolve_slug(workspace: Path, args: argparse.Namespace) -> str | None:
 
 
 def warn_multi_course(workspace: Path, slug: str | None) -> None:
-    """Print a stderr warning when multi-course SRS dir exists but no slug was resolved."""
     if slug is None and srs_dir(workspace).is_dir():
         print(
             "Warning: multi-course SRS directory exists but no --slug or --active was given. "
@@ -73,14 +75,19 @@ def warn_multi_course(workspace: Path, slug: str | None) -> None:
         )
 
 
+def _format_difficulty(row: Row) -> str:
+    label = LEVEL_LABELS.get(row.difficulty, row.difficulty)
+    return f"{row.difficulty} ({label})"
+
+
 def markdown_table(rows: list[Row]) -> str:
     lines = [
-        "| Topic | Last Review | Score | Streak | Next Review |",
-        "|-------|-------------|-------|--------|-------------|",
+        "| Topic | Last Review | Score | Streak | Next Review | Difficulty |",
+        "|-------|-------------|-------|--------|-------------|------------|",
     ]
     for row in rows:
         lines.append(
-            f"| {row.topic} | {row.last_review} | {row.score} | {row.streak} | {row.next_review} |"
+            f"| {row.topic} | {row.last_review} | {row.score} | {row.streak} | {row.next_review} | {_format_difficulty(row)} |"
         )
     return "\n".join(lines) + "\n"
 
@@ -92,12 +99,23 @@ def parse_table(text: str) -> list[Row]:
         if not stripped.startswith("|"):
             continue
         cells = [cell.strip() for cell in stripped.strip("|").split("|")]
-        if len(cells) != 5:
+        if len(cells) not in (5, 6):
             continue
-        # Skip header row and separator row
         if cells[0] == "Topic" or set(cells[0]) <= {"-"}:
             continue
-        rows.append(Row(cells[0], cells[1], int(cells[2]), int(cells[3]), cells[4]))
+        try:
+            score = int(cells[2])
+            streak = int(cells[3])
+        except ValueError:
+            continue
+        if len(cells) == 5:
+            # Legacy format without difficulty column
+            rows.append(Row(cells[0], cells[1], score, streak, cells[4]))
+        else:
+            diff = cells[5].split(" (")[0] if " (" in cells[5] else cells[5]
+            if diff not in DIFFICULTY_MULTIPLIER:
+                diff = "medium"
+            rows.append(Row(cells[0], cells[1], score, streak, cells[4], difficulty=diff))
     return rows
 
 
@@ -112,23 +130,38 @@ def write_rows(path: Path, rows: list[Row]) -> None:
     path.write_text(markdown_table(rows), encoding="utf-8")
 
 
-def next_interval(streak: int) -> int:
-    return INTERVALS.get(streak, 30)
+def next_interval(streak: int, difficulty: str = "medium") -> int:
+    """Return days until next review, adjusted by difficulty.
+
+    - easy:   multiply by 1.4 (review less often)
+    - medium: multiply by 1.0 (base SM-0 interval)
+    - hard:   multiply by 0.6 (review more often)
+    """
+    base = INTERVALS.get(streak, 30)
+    multiplier = DIFFICULTY_MULTIPLIER.get(difficulty, 1.0)
+    return max(1, int(base * multiplier))
 
 
-def updated_row(topic: str, score: int, today: dt.date, old: Row | None = None) -> Row:
+def updated_row(
+    topic: str,
+    score: int,
+    today: dt.date,
+    old: Row | None = None,
+    difficulty: str = "medium",
+) -> Row:
     if score <= 2:
         streak = 0
         interval = 1
     else:
         streak = (old.streak if old else 0) + 1
-        interval = next_interval(streak)
+        interval = next_interval(streak, difficulty)
     return Row(
         topic=topic,
         last_review=today.isoformat(),
         score=score,
         streak=streak,
         next_review=(today + dt.timedelta(days=interval)).isoformat(),
+        difficulty=difficulty,
     )
 
 
@@ -163,10 +196,10 @@ def cmd_update(args: argparse.Namespace) -> int:
     path = srs_path(workspace, slug)
     rows = read_rows(path)
     old = next((row for row in rows if row.topic == args.topic), None)
-    new = updated_row(args.topic, args.score, today, old)
+    new = updated_row(args.topic, args.score, today, old, difficulty=args.difficulty)
     rows = [row for row in rows if row.topic != args.topic] + [new]
     write_rows(path, sorted(rows, key=lambda row: row.topic.lower()))
-    print(f"{new.topic}\t{new.score}\t{new.streak}\t{new.next_review}")
+    print(f"{new.topic}\t{new.score}\t{new.streak}\t{new.next_review}\t{new.difficulty}")
     return 0
 
 
@@ -180,9 +213,9 @@ def cmd_due(args: argparse.Namespace) -> int:
     due.sort(key=lambda row: ((today - parse_date(row.next_review)).days, -row.score), reverse=True)
     if args.format == "tsv":
         writer = csv.writer(sys.stdout, delimiter="\t", lineterminator="\n")
-        writer.writerow(HEADER + ["Overdue Days"])
+        writer.writerow(HEADER)
         for row in due:
-            writer.writerow([row.topic, row.last_review, row.score, row.streak, row.next_review, (today - parse_date(row.next_review)).days])
+            writer.writerow([row.topic, row.last_review, row.score, row.streak, row.next_review, row.difficulty])
     else:
         sys.stdout.write(markdown_table(due))
     return 0
@@ -218,6 +251,8 @@ def build_parser() -> argparse.ArgumentParser:
     update.add_argument("--today", default=dt.date.today().isoformat(), help="ISO date (default: today).")
     update.add_argument("--slug")
     update.add_argument("--active", action="store_true")
+    update.add_argument("--difficulty", choices=("easy", "medium", "hard"), default="medium",
+                        help="Difficulty level (easy → 1.4x interval, medium → 1.0x, hard → 0.6x)")
     update.set_defaults(func=cmd_update)
 
     due = sub.add_parser("due", help="List due topics.")

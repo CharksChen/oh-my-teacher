@@ -86,14 +86,15 @@ When multiple files arrive:
 
 ## Ingestion by Environment
 
-The ingestion step looks very different depending on what the host can actually read.
+The ingestion step depends on host capabilities. Use `references/environment-adaptation.md` first when the host is unknown or when file access, retrieval, OCR, or persistence matters.
 
-- **Agent shell**: read files directly from disk, run the `pdf` skill, OCR images with the `pdf` or `image` skill. Build a chapter index from filenames and headings. This is the default assumed above.
-- **RAG notebook**: the model already has the document context preloaded. Skip the file-reading step. Treat the student's pasted snippets as the unit of work and cite the source after each extraction. If the student does not paste, ask them to point at the section ("第三章 极限" or "the section on epsilon-delta definitions") rather than asking for the file.
-- **Plain chat**: there are no files. Ask the student to:
+- **Agent shell**: read files directly from disk, run the `pdf` skill when available, OCR images with available image/PDF tooling, and build a chapter index from filenames and headings. Typical hosts include Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, and Qoder Work when file/shell tools exist.
+- **RAG notebook**: the model already has document context or retrieval. Typical hosts include NotebookLM, ima, and document-chat notebooks. Skip local file-reading. Treat retrieved or pasted snippets as the unit of work and cite sources when the host exposes citations. If retrieval is thin, ask for the section title, page range, or pasted excerpt.
+- **Notes app**: the user works in Obsidian or a Markdown/PKM tool. Prefer Markdown-native ingestion: headings, tags, backlinks, pasted note blocks, and excerpt-by-excerpt summaries. Output copyable blocks with tags such as `#课程/高数`, `#错题`, and backlinks such as `[[极限]]` when useful. Do not assume shell execution or direct vault access unless confirmed.
+- **Plain chat**: there are no reliable files. Ask the student to:
   1. Paste the relevant chapter text directly (limit to one topic at a time to keep context).
   2. Send a photo of handwritten notes or a slide screenshot — the model can read the image inline.
   3. Send a PDF page-by-page as images, not as the PDF itself, if the chat client cannot accept PDFs.
   4. For very long materials, work in passes: first the table of contents + chapter titles, then the chapters in priority order.
 
-After ingestion in a plain chat, the model should always echo back a compact material summary so the student can confirm "yes, this is what I sent" before any review work begins.
+After ingestion in a notes app or plain chat, always echo back a compact material summary so the student can confirm "yes, this is what I sent" before any review work begins.

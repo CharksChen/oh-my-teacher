@@ -1,6 +1,6 @@
 # Visual, Image, Video, and Animation Support
 
-For coding-related animations and algorithm visualizations, see `references/coding-demos.md`. For subject-specific visual defaults (math plots, physics diagrams, etc.), see `references/subject-adaptation.md`.
+For coding-related animations and algorithm visualizations, see `references/coding-demos.md`. For subject-specific visual defaults (math plots, physics diagrams, etc.), see `references/subject-adaptation.md`. For host fallbacks, see `references/environment-adaptation.md`.
 
 Use visuals when they improve understanding, especially for processes, structure, comparison, spatial reasoning, dynamic changes, and memory sheets.
 
@@ -19,16 +19,16 @@ Do not force image generation when a diagram/table is clearer.
 
 ## Environment-Aware Visual Form
 
-Pick the visual form that the host environment can actually render. The skill's default is the agent shell, but it must also work in RAG notebooks and plain chat.
+Pick the visual form that the host environment can actually render. Use capability checks rather than product names.
 
-| Visual goal | Agent shell | RAG notebook | Plain chat |
-|-------------|-------------|--------------|------------|
-| Concept map / flowchart | Mermaid file (`.mmd`) the student can preview in any Mermaid renderer | Mermaid code block inline (most RAG UIs render Mermaid) | ASCII tree or numbered hierarchy |
-| Comparison | Markdown table in a file | Markdown table inline | Plain-text table or bullet list with `|` separators |
-| Math / physics plot | Python (matplotlib) script, run, attach image or save PNG | Describe the plot + the shape; offer to narrate step-by-step | Describe the plot; ASCII for very small graphs; no PNG expected |
-| Algorithm trace | HTML Canvas / p5.js / Manim file | Pseudocode + state table inline | State table inline (line × variable columns) |
-| Polished illustration | Image API (Sora / DALL-E / etc.) — confirm cost first | Image API only if the notebook exposes it; otherwise Mermaid/ASCII | **Do not call.** Describe in prose and offer an Mermaid/ASCII alternative |
-| Dynamic process / video | Manim / HTML Canvas / video API — confirm cost first | Storyboard inline + key frames as Mermaid or text | Storyboard inline only; no video, no Manim execution |
+| Visual goal | Agent shell | RAG notebook | Notes app | Plain chat |
+|-------------|-------------|--------------|-----------|------------|
+| Concept map / flowchart | Mermaid file (`.mmd`) the student can preview in any Mermaid renderer | Mermaid code block inline if supported | Mermaid or Markdown outline with backlinks | ASCII tree or numbered hierarchy |
+| Comparison | Markdown table in a file | Markdown table inline | Markdown table with tags/backlinks | Plain-text table or bullet list with `|` separators |
+| Math / physics plot | Python (matplotlib) script, run, attach image or save PNG | Describe the plot + shape; cite source if based on materials | Describe plot; optionally link note sections | Describe the plot; ASCII for very small graphs; no PNG expected |
+| Algorithm trace | HTML Canvas / p5.js / Manim file | Pseudocode + state table inline | State table note block | State table inline (line × variable columns) |
+| Polished illustration | Image API — confirm cost first | Image API only if exposed; otherwise Mermaid/ASCII | Provider-neutral prompt only unless plugin supports generation | **Do not call.** Describe in prose and offer Mermaid/ASCII |
+| Dynamic process / video | Manim / HTML Canvas / video API — confirm cost first | Storyboard inline + key frames as Mermaid or text | Storyboard Markdown | Storyboard inline only; no video, no Manim execution |
 
 ### ASCII Quick Sketches
 

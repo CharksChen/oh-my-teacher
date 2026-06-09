@@ -14,7 +14,15 @@ Input formats supported per card block (blank lines separate cards):
 
   Front | Back
 
+  Q: [Bi-directional] question
+  A: answer
+
 CSV columns: Front, Back, Tags, Deck (use --format tsv for tab-separated output)
+
+When a Q: or Front: field starts with `[Bi-directional]`, the script emits
+two CSV rows: the original card (front → back) plus a reversed card
+(back → front). This saves the user from duplicating cards manually in
+Anki's Basic (and reversed card) note type.
 
 By default, Cloze blocks are emitted as a single CSV row containing the
 original {{c1::...}} syntax, which is what Anki's Cloze note type expects
@@ -44,6 +52,8 @@ _FIELD_RE = re.compile(
     r"^(?P<key>Q|Front|A|Back|Cloze|Tags|Deck)\s*:\s*(?P<value>.*)$",
     re.IGNORECASE,
 )
+
+_BI_RE = re.compile(r"^\[Bi-directional]\s*(.*)$", re.IGNORECASE)
 
 
 class _ParseState:
@@ -155,12 +165,24 @@ def parse_cards(
             state.skipped_blocks.append((block_idx + 1, preview))
             continue
 
+        # Check for [Bi-directional] marker
+        bi_match = _BI_RE.match(front) if front else None
+        if bi_match:
+            front = bi_match.group(1)
+            bidirectional = True
+        else:
+            bidirectional = False
+
         expansions = _expand_clozes(front) if expand_cloze else None
         if expansions:
             for exp_front, exp_back in expansions:
                 cards.append((exp_front, exp_back or back, tags, deck))
+                if bidirectional and exp_back:
+                    cards.append((exp_back, exp_front, tags, deck))
         else:
             cards.append((front, back, tags, deck))
+            if bidirectional and back:
+                cards.append((back, front, tags, deck))
 
         state.log_verbose(f"  Parsed card {len(cards)}: front={front[:60]!r} deck={deck!r} tags={tags!r}")
 

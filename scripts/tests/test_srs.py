@@ -36,8 +36,22 @@ class IntervalTests(unittest.TestCase):
         self.assertEqual(next_interval(100), 30)
 
     def test_intervals_dict_is_readonly_constant(self):
-        # Verify the INTERVALS dict matches expected values
         self.assertEqual(INTERVALS, {1: 1, 2: 3, 3: 7, 4: 14})
+
+    def test_easy_difficulty_multiplies_interval_up(self):
+        self.assertEqual(next_interval(1, "easy"), 1)  # int(1 * 1.4) = 1
+        self.assertEqual(next_interval(3, "easy"), 9)  # int(7 * 1.4) = 9
+        self.assertEqual(next_interval(5, "easy"), 42)  # int(30 * 1.4) = 42
+
+    def test_hard_difficulty_multiplies_interval_down(self):
+        self.assertEqual(next_interval(1, "hard"), 1)  # max(1, int(1*0.6)) = 1
+        self.assertEqual(next_interval(3, "hard"), 4)  # int(7 * 0.6) = 4
+        self.assertEqual(next_interval(5, "hard"), 18)  # int(30 * 0.6) = 18
+
+    def test_medium_difficulty_uses_base_interval(self):
+        self.assertEqual(next_interval(1, "medium"), 1)
+        self.assertEqual(next_interval(3, "medium"), 7)
+        self.assertEqual(next_interval(5, "medium"), 30)
 
 
 class ParseDateTests(unittest.TestCase):
@@ -90,6 +104,33 @@ class UpdatedRowTests(unittest.TestCase):
         self.assertEqual(new.streak, 5)  # 4 + 1
         self.assertEqual(new.next_review, "2026-07-07")  # today + 30
 
+    def test_difficulty_affects_next_review(self):
+        import datetime as dt
+        today = dt.date(2026, 6, 7)
+        old_easy = Row("e", "2026-06-01", 4, 3, "2026-06-08", difficulty="easy")
+        old_hard = Row("h", "2026-06-01", 4, 3, "2026-06-08", difficulty="hard")
+        new_easy = updated_row("e", 5, today, old_easy, difficulty="easy")
+        new_hard = updated_row("h", 5, today, old_hard, difficulty="hard")
+        self.assertEqual(new_easy.streak, 4)
+        self.assertEqual(new_hard.streak, 4)
+        # Same streak (4), different intervals: 14*1.4 vs 14*0.6
+        self.assertEqual(new_easy.next_review, "2026-06-26")  # today + 19 (int(14*1.4))
+        self.assertEqual(new_hard.next_review, "2026-06-15")  # today + 8 (int(14*0.6))
+
+    def test_new_topic_with_difficulty(self):
+        import datetime as dt
+        today = dt.date(2026, 6, 7)
+        new = updated_row("hard-topic", 4, today, None, difficulty="hard")
+        self.assertEqual(new.difficulty, "hard")
+        # New topic, streak=1, base interval=1, hard → int(1*0.6) = 1
+        self.assertEqual(new.next_review, "2026-06-08")
+
+    def test_updated_row_defaults_to_medium_difficulty(self):
+        import datetime as dt
+        today = dt.date(2026, 6, 7)
+        new = updated_row("default", 4, today, None)
+        self.assertEqual(new.difficulty, "medium")
+
 
 class MarkdownTableTests(unittest.TestCase):
     def test_empty_rows(self):
@@ -119,6 +160,13 @@ class MarkdownTableTests(unittest.TestCase):
         self.assertEqual(len(lines), 4)  # header + separator + 2 data rows
         self.assertIn("| a |", lines[2])
         self.assertIn("| b |", lines[3])
+
+    def test_include_difficulty_column(self):
+        row = Row("limits", "2026-06-01", 4, 2, "2026-06-04", difficulty="hard")
+        table = markdown_table([row])
+        self.assertIn("Difficulty", table)
+        self.assertIn("hard", table)
+        self.assertIn("困难", table)
 
 
 class ParseTableTests(unittest.TestCase):
@@ -159,16 +207,64 @@ Some trailing text"""
     def test_extra_spaces_in_cells_are_stripped(self):
         text = "|   spaced   |   2026-01-01   |   3   |   1   |   2026-01-04   |"
         rows = parse_table(text)
-        # Header line not present, so this should still parse if it looks like data
-        # Actually, the first cell "spaced" won't match "Topic" or all-dashes,
-        # but we need the header to avoid it being skipped.
-        # Let me provide a proper header.
         full = """| Topic | Last Review | Score | Streak | Next Review |
 |-------|-------------|-------|--------|-------------|
 |   spaced   |   2026-01-01   |   3   |   1   |   2026-01-04   |"""
         rows = parse_table(full)
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0].topic, "spaced")
+
+    def test_parse_legacy_5_column_format(self):
+        text = """| Topic | Last Review | Score | Streak | Next Review |
+|-------|-------------|-------|--------|-------------|
+| limits | 2026-06-01 | 4 | 2 | 2026-06-04 |"""
+        rows = parse_table(text)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].difficulty, "medium")
+
+    def test_parse_new_6_column_format(self):
+        text = """| Topic | Last Review | Score | Streak | Next Review | Difficulty |
+|-------|-------------|-------|--------|-------------|------------|
+| limits | 2026-06-01 | 4 | 2 | 2026-06-04 | hard (困难) |"""
+        rows = parse_table(text)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].difficulty, "hard")
+
+    def test_parse_6_column_strips_chinese_label(self):
+        text = """| Topic | Last Review | Score | Streak | Next Review | Difficulty |
+|-------|-------------|-------|--------|-------------|------------|
+| topic | 2026-06-01 | 5 | 3 | 2026-06-10 | easy (简单) |"""
+        rows = parse_table(text)
+        self.assertEqual(rows[0].difficulty, "easy")
+
+    def test_parse_mixed_legacy_and_new(self):
+        # When round-tripping, the file will be uniform.
+        # This test ensures backward compatibility: a file written by old srs.py
+        # (5 columns) can be read by the new parse_table.
+        text = """| Topic | Last Review | Score | Streak | Next Review |
+|-------|-------------|-------|--------|-------------|
+| legacy | 2026-01-01 | 3 | 1 | 2026-01-04 |"""
+        rows = parse_table(text)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].topic, "legacy")
+        self.assertEqual(rows[0].difficulty, "medium")
+
+    def test_skips_rows_with_non_numeric_score_or_streak(self):
+        text = """| Topic | Last Review | Score | Streak | Next Review |
+|-------|-------------|-------|--------|-------------|
+| bad-score | 2026-01-01 | x | 1 | 2026-01-04 |
+| bad-streak | 2026-01-01 | 3 | y | 2026-01-04 |
+| good | 2026-01-01 | 3 | 1 | 2026-01-04 |"""
+        rows = parse_table(text)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].topic, "good")
+
+    def test_unknown_difficulty_defaults_to_medium(self):
+        text = """| Topic | Last Review | Score | Streak | Next Review | Difficulty |
+|-------|-------------|-------|--------|-------------|------------|
+| topic | 2026-06-01 | 5 | 3 | 2026-06-10 | impossible |"""
+        rows = parse_table(text)
+        self.assertEqual(rows[0].difficulty, "medium")
 
 
 class FileReadWriteTests(unittest.TestCase):
@@ -325,7 +421,7 @@ class CLIIntegrationTests(unittest.TestCase):
                 "--format", "tsv",
             ])
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn("Overdue Days", result.stdout)
+            self.assertIn("Difficulty", result.stdout)
             self.assertIn("\t", result.stdout)
 
     def test_list_command(self):
@@ -341,6 +437,17 @@ class CLIIntegrationTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("| a |", result.stdout)
             self.assertIn("| b |", result.stdout)
+
+    def test_update_with_difficulty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._run(["--workspace", tmp, "init"])
+            result = self._run([
+                "--workspace", tmp, "update", "hard-topic",
+                "--score", "4", "--today", "2026-06-07",
+                "--difficulty", "hard",
+            ])
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("hard", result.stdout)
 
     def test_update_invalid_score_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

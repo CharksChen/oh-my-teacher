@@ -1,6 +1,6 @@
 # Practice Workflows
 
-Use this file for active recall, `/mock`, `/oral`, `/fix`, `/summary`, and practice repair loops.
+Use this file for active recall, `/mock`, `/oral`, `/fix`, `/summary`, and practice repair loops. For strategy selection rules, see `references/learning-strategies.md`.
 
 ## Active Recall
 
@@ -23,6 +23,8 @@ Use three levels per concept:
 2. Understanding: explain why, condition, or comparison.
 3. Exam application: solve, prove, calculate, debug, or analyze.
 
+When the student already knows the basics, mix related topics instead of drilling one pattern repeatedly. Use interleaving from `references/learning-strategies.md` to force method recognition.
+
 ## Mock Exam
 
 Specify:
@@ -43,9 +45,11 @@ When grading or reviewing mistakes:
 1. Identify the exact mistaken knowledge point.
 2. Classify the error: concept, condition, formula, computation, proof gap, code edge case, experiment operation, expression.
 3. Give a micro-lesson.
-4. Generate three repairs: basic, variant, mixed/comprehensive.
-5. Update suggested next review task.
-6. Update the SRS row for this topic (see `references/spaced-repetition.md`); in agent shells prefer `scripts/srs.py update`.
+4. Ask for one self-explanation of the corrected step when the error involves proof, derivation, code trace, or lab operation.
+5. Generate three repairs: basic, variant, mixed/comprehensive.
+6. Add one recognition prompt when the mistake was choosing the wrong method.
+7. Update suggested next review task.
+8. Update the SRS row for this topic (see `references/spaced-repetition.md`); in agent shells prefer `scripts/srs.py update`.
 
 ## Oral Exam Rehearsal
 
