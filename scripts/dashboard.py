@@ -47,10 +47,6 @@ def _load_snapshot(workspace: Path, slug: str | None) -> dict[str, str] | None:
     return parse_snapshot(path.read_text(encoding="utf-8"))
 
 
-def _load_srs(workspace: Path, slug: str | None) -> list:
-    return read_rows(snapshot_path(workspace, slug) if slug else Path(str(single_snapshot_path(workspace)).replace("snapshot", "srs"))) if False else []
-
-
 def _load_srs_rows(workspace: Path, slug: str | None) -> list:
     from srs import read_rows, srs_path
     path = srs_path(workspace, slug)

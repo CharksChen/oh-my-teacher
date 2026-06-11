@@ -134,6 +134,16 @@ Return this structure for every `/grade`, `/quiz`, or `/mock` grading response:
 [Topic, score 1-5, next review if SRS is available; otherwise say not updated]
 ```
 
+In ima-native environments, add this section after `Checks Performed` whenever course materials or notes are available:
+
+```markdown
+## Source Alignment
+| Point | Student Answer | Course Material Wording | Alignment |
+|---|---|---|---|
+```
+
+Use `search source=kb` or `fetch` to compare against course materials when needed. Mark the source level as `课程资料确认`, `ima 知识库检索`, `笔记历史`, `通用课程推断`, or `需要确认`. If source retrieval is unavailable, say `Source Alignment: not checked`.
+
 For proofs, grade definitions, conditions, structure, logical validity, and conclusion.
 
 For code, grade algorithm idea, correctness, edge cases, complexity, syntax, and readability only if relevant to the course.

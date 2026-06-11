@@ -1,6 +1,6 @@
 # Review Plans and Study Maps
 
-Use this file for `/plan`, `/map`, `/cram`, multi-course planning, final review sheets, and progress heat maps. For selecting retrieval, spacing, interleaving, elaboration, self-explanation, and dual coding, see `references/learning-strategies.md`.
+Use this file for `/plan`, `/map`, `/cram`, `/last-page`, `/dashboard`, multi-course planning, final review sheets, and progress heat maps. For selecting retrieval, spacing, interleaving, elaboration, self-explanation, and dual coding, see `references/learning-strategies.md`.
 
 ## Study Map
 
@@ -84,3 +84,34 @@ For final review, generate a compact sheet:
 - Time allocation.
 - Things to check before submitting.
 - For labs: steps, data table, error analysis, viva Q&A.
+
+In ima-native environments, build `/last-page` from `/source-map`, `/teacher-emphasis`, the Weak Point Board, SRS due items, and high-yield formulas/templates. Prefer writing it to ima-note; use it as the default input for `/ppt`.
+
+## Dashboard
+
+For `/dashboard`, generate a Markdown dashboard instead of relying on the local terminal dashboard:
+
+```markdown
+# 复习仪表盘
+
+## 今日状态
+- 距离考试:
+- 当前目标:
+- 今日必须完成:
+
+## 掌握度热力图
+[topic progress bars]
+
+## 今日待复习
+| Topic | 原因 | 建议动作 |
+|---|---|---|
+
+## 最大风险
+1.
+2.
+3.
+
+## 下一步
+```
+
+In ima-native environments, gather data from `memory_recall`, `search source=note`, the course homepage, SRS table, weak-point board, and recent wrong notes. Update the dashboard through `ima-note` when available.

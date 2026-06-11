@@ -4,6 +4,8 @@ Use this file for `/review-due`, SRS file handling, due-date calculation, and au
 
 In agent shells, prefer `scripts/srs.py` for deterministic `init`, `update`, `due`, `list`, and `set-active` operations instead of hand-editing Markdown tables.
 
+In ima-native environments, prefer the SRS table in the course homepage or a dedicated ima-note. Use `search source=note` to find it, `fetch type=note_id` to read the full note when needed, and `use_skill name=ima-note` to update it. Use `memory_recall` only as a fallback or to find the active course context.
+
 ## Slug Consistency
 
 The SRS slug and the snapshot slug **must** be the same for a given course. `scripts/snapshot.py` exposes a `slugify()` helper that derives slugs from course names (Unicode-aware, see `course-profiles.md` → Slug Convention). `scripts/srs.py` does **not** derive slugs itself — it accepts them via `--slug` or `--active`. When initializing a new SRS file, derive the slug with `snapshot.py slug "Course Name"` first, then pass it to `srs.py`:
@@ -100,11 +102,16 @@ When the user runs `/review-due`:
    - If `.oh-my-teacher/srs/` and `.oh-my-teacher/srs/_active` exist, read the active multi-course SRS file.
    - Otherwise read `.oh-my-teacher/srs-state.md` if it exists.
    - Preferred helper: `python scripts/srs.py due` or `python scripts/srs.py due --today YYYY-MM-DD` (the `--today` flag defaults to the system date when omitted).
-2. RAG notebook, notes app, or plain chat: parse the last copyable SRS block or note table.
-3. Determine today's date before filtering.
-4. Filter rows where `Next Review <= today`.
-5. Sort by overdue days descending, then lowest score first.
-6. Present the due list and offer to start `/quiz` on the highest-priority topic.
+2. ima-native:
+   - Use `search source=note` for the active course homepage, SRS Table, and recent wrong-question notes.
+   - Use `fetch type=note_id` when a candidate note is found.
+   - If multiple courses match, use `ask_user` once to confirm the active course.
+   - Update the note via `ima-note` or output a copyable Markdown fallback.
+3. RAG notebook, notes app, or plain chat: parse the last copyable SRS block or note table.
+4. Determine today's date before filtering.
+5. Filter rows where `Next Review <= today`.
+6. Sort by overdue days descending, then lowest score first.
+7. Present the due list and offer to start `/quiz` on the highest-priority topic.
 
 ## Automatic Updates
 

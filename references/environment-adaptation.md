@@ -12,8 +12,9 @@ Set the Current Course Snapshot `Environment` field to one of these labels:
 
 | Label | Typical hosts | Capabilities |
 |---|---|---|
+| `ima-native` | ima with ask_user/fetch/search/memory/task_plan/use_skill tools | Knowledge-base and note retrieval, memory, native note/report/PPT skills, optional shell/files |
 | `agent-shell` | Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work, other coding agents | May read/write files, run shell commands, execute scripts, render artifacts |
-| `rag-notebook` | NotebookLM, ima, document-chat notebooks, knowledge-base Q&A tools | Has uploaded document context or retrieval, usually no filesystem writes |
+| `rag-notebook` | NotebookLM, document-chat notebooks, knowledge-base Q&A tools | Has uploaded document context or retrieval, usually no filesystem writes |
 | `notes-app` | Obsidian, markdown note tools, local PKM plugins | Markdown notes, backlinks/tags, sometimes local files, usually limited execution |
 | `plain-chat` | ordinary AI chat boxes | No reliable files, shell, persistence, or retrieval unless explicitly provided |
 | `unknown` | unclear host | Use plain-chat behavior until a capability is confirmed |
@@ -38,7 +39,8 @@ If a capability is missing or uncertain, downgrade without stopping the learning
 Use these hints only after checking actual capabilities:
 
 - **Codex / Claude Code / OpenClaw / Hermes / WorkBuddy / Qoder Work**: treat as `agent-shell` when file and shell tools exist. Prefer scripts for snapshots, SRS, flashcard export, and validation.
-- **NotebookLM / ima / RAG notebooks**: treat as `rag-notebook`. Use retrieved document context and citations. Do not assume file writing or shell execution.
+- **ima**: treat as `ima-native` when ima tools such as `ask_user`, `fetch`, `search`, `memory_recall`, `memory_write`, `task_plan`, `subagent_spawn`, or `use_skill` are available. Read `references/ima-adaptation.md` before using knowledge, note, memory, report, or PPT workflows.
+- **NotebookLM / RAG notebooks**: treat as `rag-notebook`. Use retrieved document context and citations. Do not assume file writing or shell execution.
 - **Obsidian / markdown note apps**: treat as `notes-app`. Prefer Markdown blocks, tags, backlinks, and copyable snapshots. Do not assume scripts can run unless a local plugin exposes execution.
 - **Ordinary AI chat**: treat as `plain-chat`. Keep all artifacts inline and copyable.
 
@@ -71,6 +73,15 @@ Use these hints only after checking actual capabilities:
 - Cite sources when the host exposes citations.
 - Avoid asking the user to upload files again if the document is already in context.
 - If retrieval is thin, ask for a section title, page range, or pasted excerpt.
+
+### ima Native
+
+- Use `search source=kb` and `fetch` for course materials before asking the user to paste content.
+- Use `search source=note`, `memory_recall`, and `memory_write` for course continuity.
+- Use `task_plan` for workflows longer than three steps.
+- Use `use_skill name=ima-knowledge` for knowledge-base organization, `ima-note` for course home/wrong-note/SRS updates, `ima-report` for reports, and `ima-ppt` for PPT.
+- Run local Python only when `shell` is explicitly available and the script succeeds.
+- Label evidence as `课程资料确认`, `ima 知识库检索`, `笔记历史`, `通用课程推断`, or `需要确认`.
 
 ### Notes App
 

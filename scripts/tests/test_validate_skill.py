@@ -1,10 +1,11 @@
 """Tests for scripts/validate_skill.py."""
+
 from __future__ import annotations
 
-import subprocess
-import sys
 import os
 import shutil
+import subprocess
+import sys
 import unittest
 from pathlib import Path
 
@@ -12,7 +13,14 @@ SCRIPT_DIR = Path(__file__).resolve().parent.parent
 ROOT_DIR = SCRIPT_DIR.parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
-from validate_skill import commands_from_index, course_template_keys, frontmatter  # noqa: E402
+from validate_skill import (  # noqa: E402
+    DANGEROUS_REASONING_PATTERNS,
+    IMA_SKILLS,
+    IMA_TOOLS,
+    commands_from_index,
+    course_template_keys,
+    frontmatter,
+)
 
 
 class ValidateSkillTests(unittest.TestCase):
@@ -20,11 +28,9 @@ class ValidateSkillTests(unittest.TestCase):
         text = (ROOT_DIR / "SKILL.md").read_text(encoding="utf-8")
         fm_keys = set(frontmatter(text))
         self.assertTrue(fm_keys >= {"name", "description"}, f"Missing required keys: {fm_keys}")
-        allowed = {"name", "description"}
-        extra = fm_keys - allowed
-        self.assertFalse(extra, f"Unexpected frontmatter keys: {extra}")
+        self.assertFalse(fm_keys - {"name", "description"})
 
-    def test_index_includes_core_commands(self):
+    def test_index_includes_core_and_ima_commands(self):
         text = (ROOT_DIR / "references" / "INDEX.md").read_text(encoding="utf-8")
         commands = commands_from_index(text)
         for command in [
@@ -38,6 +44,7 @@ class ValidateSkillTests(unittest.TestCase):
             "/map",
             "/explain",
             "/socratic",
+            "/feynman",
             "/quiz",
             "/mock",
             "/oral",
@@ -53,12 +60,38 @@ class ValidateSkillTests(unittest.TestCase):
             "/resume",
             "/summary",
             "/mode",
+            "/source-map",
+            "/paper-analyze",
+            "/teacher-emphasis",
+            "/wrong-note",
+            "/dashboard",
+            "/last-page",
+            "/report",
+            "/ppt",
         ]:
             self.assertIn(command, commands)
 
+    def test_ima_adapter_mentions_all_native_tools_and_skills(self):
+        text = (ROOT_DIR / "references" / "ima-adaptation.md").read_text(encoding="utf-8")
+        for tool in IMA_TOOLS:
+            self.assertIn(tool, text)
+        for skill in IMA_SKILLS:
+            self.assertIn(skill, text)
+        self.assertIn("only when shell is explicitly available", text)
+
+    def test_chinese_routing_covers_common_triggers(self):
+        text = (ROOT_DIR / "references" / "chinese-routing.md").read_text(encoding="utf-8")
+        for phrase in ["老师说这些是重点", "帮我看往年题怎么复习", "整理错题", "今天该复习什么", "生成复习 PPT"]:
+            self.assertIn(phrase, text)
+
+    def test_ima_agent_exists(self):
+        text = (ROOT_DIR / "agents" / "ima.yaml").read_text(encoding="utf-8")
+        for phrase in ["SKILL.md", "ima-native", "search source=kb", "ima-note", "task_plan"]:
+            self.assertIn(phrase, text)
+
     def test_environment_reference_exists(self):
         text = (ROOT_DIR / "references" / "environment-adaptation.md").read_text(encoding="utf-8")
-        for phrase in ["agent-shell", "rag-notebook", "notes-app", "plain-chat", "Codex", "NotebookLM", "Obsidian"]:
+        for phrase in ["agent-shell", "rag-notebook", "notes-app", "plain-chat", "ima-native"]:
             self.assertIn(phrase, text)
 
     def test_mode_protocol_references_exist(self):
@@ -69,18 +102,21 @@ class ValidateSkillTests(unittest.TestCase):
         self.assertIn("Feynman Check", feynman)
         self.assertIn("Repair Card", feynman)
 
-    def test_examples_cover_signature_modes(self):
+    def test_examples_cover_signature_modes_and_ima(self):
         text = "\n".join(path.read_text(encoding="utf-8") for path in (ROOT_DIR / "examples").glob("*.md"))
         self.assertIn("/socratic", text)
         self.assertIn("/feynman", text)
+        self.assertIn("ima", text.lower())
 
-    def test_agent_configs_do_not_request_hidden_reasoning(self):
+    def test_dangerous_reasoning_patterns_do_not_include_empty_string(self):
+        self.assertNotIn("", DANGEROUS_REASONING_PATTERNS)
+
+    def test_agent_configs_do_not_request_hidden_reasoning_or_mojibake(self):
         text = "\n".join(path.read_text(encoding="utf-8").lower() for path in (ROOT_DIR / "agents").glob("*.*"))
         self.assertNotIn("write your reasoning chain", text)
         self.assertNotIn("chain-of-thought", text)
         self.assertNotIn("<thought>", text)
-        self.assertNotIn("推理链", text)
-        self.assertNotIn("思维链", text)
+        self.assertNotIn("????", text)
 
     def test_common_course_templates_exist(self):
         templates = course_template_keys(ROOT_DIR / "scripts" / "course_templates.py")

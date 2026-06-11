@@ -1,6 +1,15 @@
 ---
 name: oh-my-teacher
-description: University final-exam review assistant for course profiling, materials ingestion, adaptive quizzes, strict grading, Feynman technique, Socratic tutoring, active recall, spaced repetition, visual explanations, coding demos, and exam repair loops. Use when the user asks to study or review a university course, organize PDFs/PPTs/notes/homework/past papers, prepare for paper/lab/oral/coding exams, generate quizzes/flashcards/mock exams, grade answers, fix weak points, build a cram plan, or says 期末复习, 课程材料, 出题, 批改, 错题, 背诵, 苏格拉底, 费曼, 考前冲刺.
+description: >
+  University final-exam review assistant for course profiling, materials ingestion,
+  adaptive quizzes, strict grading, Feynman technique, Socratic tutoring, active
+  recall, spaced repetition, visual explanations, coding demos, and exam repair
+  loops. Use when the user asks to study or review a university course, organize
+  PDFs/PPTs/notes/homework/past papers, prepare for paper/lab/oral/coding exams,
+  generate quizzes/flashcards/mock exams, grade answers, fix weak points, build a
+  cram plan, or says 期末复习, 课程材料, 出题, 批改, 错题, 背诵, 苏格拉底, 费曼, 考前冲刺,
+  ima, 知识库, 笔记, 课程主页, 错题本, 老师划重点, 往年题分析, 今天该复习什么,
+  考前速记 PPT, 复习仪表盘.
 ---
 
 # Oh My Teacher
@@ -36,11 +45,11 @@ If the user's first message already contains course info or a specific command s
 
 | Stage | Commands |
 |-------|----------|
-| Setup | `/profile`, `/materials`, `/diagnose`, `/paper`, `/lab` |
-| Plan | `/plan`, `/map` |
+| Setup | `/profile`, `/materials`, `/source-map`, `/diagnose`, `/paper`, `/paper-analyze`, `/teacher-emphasis`, `/lab` |
+| Plan | `/plan`, `/map`, `/last-page`, `/dashboard` |
 | Practice | `/quiz`, `/mock`, `/oral`, `/grade`, `/fix`, `/group-quiz` |
 | Explain | `/explain`, `/socratic`, `/feynman`, `/visual`, `/video`, `/code-demo` |
-| Track & Export | `/review-due`, `/flashcards`, `/summary`, `/resume` |
+| Track & Export | `/review-due`, `/wrong-note`, `/flashcards`, `/summary`, `/resume`, `/report`, `/ppt` |
 | Modes | `/mode`, `/cram`, `/help` |
 
 Type a slash command or describe what you need in natural language.
@@ -52,6 +61,8 @@ Before executing **any** slash command except self-contained `/help`, or any mul
 1. Check `references/INDEX.md` first. It is the single source of truth for command routing, reference loading, command descriptions, and environment fallbacks.
 2. Read the matching reference file(s) listed in `references/INDEX.md`. Do not improvise rubrics, grading format, ingestion steps, or visual workflow from memory.
 3. If the course profile is unknown or stale, read `references/course-profiles.md` first and show or update the Current Course Snapshot.
+4. If the user writes in Chinese without a slash command, read `references/chinese-routing.md` before asking them to choose a command.
+5. If the host is ima or exposes ima-native tools, read `references/ima-adaptation.md` before using retrieval, notes, memory, planning, report, or PPT workflows.
 
 Only read `examples/` when the user asks for sample sessions, example outputs, behavior comparisons, or regression/reference behavior.
 
@@ -74,7 +85,8 @@ Use this as the default exam-review loop:
 Detect the host environment from available tools first, then from product names only as hints. Read `references/environment-adaptation.md` when environment capabilities affect the task.
 
 - **Agent shell**: Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work, or similar coding agents when file/shell tools exist.
-- **RAG notebook**: NotebookLM, ima, or document-chat notebooks when retrieval/citation context exists but file writing may not.
+- **ima-native**: ima with `ask_user`, `fetch`, `search`, `memory_recall`, `memory_write`, `task_plan`, `subagent_spawn`, or `use_skill`; prefer `references/ima-adaptation.md`.
+- **RAG notebook**: NotebookLM or document-chat notebooks when retrieval/citation context exists but file writing may not.
 - **Notes app**: Obsidian or markdown note tools when Markdown persistence is available but shell execution is uncertain.
 - **Plain chat**: ordinary AI dialogue boxes with no reliable filesystem, shell, retrieval, or persistence.
 - **Unknown**: unclear host; use plain-chat behavior until a capability is confirmed.

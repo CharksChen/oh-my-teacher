@@ -59,9 +59,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if not HAS_SYMPY:
-        print("Warning: sympy is not installed. Install with: pip install sympy", file=sys.stderr)
-        print("Skipping verification (assume correct)", file=sys.stderr)
-        return 0
+        print("SymPy is not installed. Verification skipped: result is unverified.", file=sys.stderr)
+        return 2
 
     if args.diff:
         ok, msg = verify_derivative(args.expr, args.answer)

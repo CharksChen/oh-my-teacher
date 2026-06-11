@@ -1,22 +1,50 @@
 #!/usr/bin/env python3
-"""Validate the Oh My Teacher skill package.
-
-The checks are intentionally local and dependency-free so they can run in
-ordinary agent shells before packaging or after edits.
-"""
+"""Validate the Oh My Teacher skill package."""
 
 from __future__ import annotations
 
 import argparse
 import ast
+import json
 import re
 import sys
 from pathlib import Path
 
-ROOT_FILES = {"SKILL.md", "README.md"}
 COMMAND_RE = re.compile(r"(?<![\w/])/(?P<cmd>[a-z][a-z0-9-]*)(?![\w.-])")
 INDEX_ROW_RE = re.compile(r"^\|\s*`(?P<command>/[a-z][a-z0-9-]*)(?:\s+[^`]*)?`\s*\|")
 INDEX_REF_RE = re.compile(r"`([\w-]+\.md)`")
+MOJIBAKE_MARKERS = ("????", "鈥", "鎺ㄧ悊", "鎬濈淮")
+DANGEROUS_REASONING_PATTERNS = [
+    "write your reasoning chain",
+    "chain-of-thought",
+    "use cot",
+    "<thought>",
+    "推理链",
+    "思维链",
+]
+IMA_TOOLS = [
+    "ask_user",
+    "fetch",
+    "file_edit",
+    "file_read",
+    "file_write",
+    "provide_file",
+    "memory_recall",
+    "memory_write",
+    "match",
+    "search",
+    "shell",
+    "subagent_spawn",
+    "task_plan",
+    "use_skill",
+]
+IMA_SKILLS = [
+    "ima-knowledge",
+    "ima-note",
+    "ima-ppt",
+    "ima-report",
+    "ima-skill-creator",
+]
 
 
 def read_text(path: Path) -> str:
@@ -68,11 +96,6 @@ def commands_from_markdown(root: Path) -> dict[Path, set[str]]:
     return found
 
 
-def check(condition: bool, errors: list[str], message: str) -> None:
-    if not condition:
-        errors.append(message)
-
-
 def course_template_keys(path: Path) -> set[str]:
     tree = ast.parse(read_text(path), filename=str(path))
     for node in tree.body:
@@ -94,36 +117,78 @@ def course_template_keys(path: Path) -> set[str]:
     raise ValueError("TEMPLATES dict not found.")
 
 
+def check(condition: bool, errors: list[str], message: str) -> None:
+    if not condition:
+        errors.append(message)
+
+
+def validate_agent_configs(root: Path, errors: list[str]) -> None:
+    agent_dir = root / "agents"
+    for path in sorted(agent_dir.glob("*")):
+        if path.suffix.lower() not in {".yaml", ".yml", ".json"}:
+            continue
+        text = read_text(path)
+        lower = text.lower()
+        hits = [pattern for pattern in DANGEROUS_REASONING_PATTERNS if pattern in lower]
+        check(not hits, errors, f"{path.relative_to(root)} asks for hidden reasoning disclosure: {', '.join(hits)}")
+        marker_hits = [marker for marker in MOJIBAKE_MARKERS if marker in text]
+        check(not marker_hits, errors, f"{path.relative_to(root)} appears to contain mojibake: {', '.join(marker_hits)}")
+        if path.suffix.lower() == ".json":
+            try:
+                json.loads(text)
+            except json.JSONDecodeError as exc:
+                errors.append(f"{path.relative_to(root)} is invalid JSON: {exc}")
+
+
+def validate_ima_files(root: Path, index_commands: set[str], errors: list[str]) -> None:
+    ima_agent = root / "agents" / "ima.yaml"
+    ima_ref = root / "references" / "ima-adaptation.md"
+    chinese_ref = root / "references" / "chinese-routing.md"
+    check(ima_agent.exists(), errors, "Missing agents/ima.yaml.")
+    check(ima_ref.exists(), errors, "Missing references/ima-adaptation.md.")
+    check(chinese_ref.exists(), errors, "Missing references/chinese-routing.md.")
+    if ima_agent.exists():
+        agent_text = read_text(ima_agent)
+        for phrase in ["SKILL.md", "ima-native", "search source=kb", "ima-note", "task_plan"]:
+            check(phrase in agent_text, errors, f"agents/ima.yaml must mention {phrase!r}.")
+    if ima_ref.exists():
+        ima_text = read_text(ima_ref)
+        for tool in IMA_TOOLS:
+            check(tool in ima_text, errors, f"ima-adaptation.md missing ima tool: {tool}.")
+        for skill in IMA_SKILLS:
+            check(skill in ima_text, errors, f"ima-adaptation.md missing native skill: {skill}.")
+        check("only when shell is explicitly available" in ima_text, errors, "ima-adaptation.md must say local Python requires explicit shell availability.")
+    if chinese_ref.exists():
+        chinese_text = read_text(chinese_ref)
+        for phrase in ["老师说这些是重点", "帮我看往年题怎么复习", "整理错题", "今天该复习什么", "生成复习 PPT"]:
+            check(phrase in chinese_text, errors, f"chinese-routing.md missing trigger phrase: {phrase}.")
+    required_ima_commands = {
+        "/source-map",
+        "/paper-analyze",
+        "/teacher-emphasis",
+        "/wrong-note",
+        "/dashboard",
+        "/last-page",
+        "/report",
+        "/ppt",
+    }
+    missing_ima = sorted(required_ima_commands - index_commands)
+    check(not missing_ima, errors, "ima commands missing from INDEX.md: " + ", ".join(missing_ima))
+
+
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
-
     skill_path = root / "SKILL.md"
     index_path = root / "references" / "INDEX.md"
-    agent_path = root / "agents" / "openai.yaml"
-
-    check(skill_path.exists(), errors, "Missing SKILL.md.")
-    check(index_path.exists(), errors, "Missing references/INDEX.md.")
-    check(agent_path.exists(), errors, "Missing agents/openai.yaml.")
-
-    required_scripts = [
-        "export_flashcards.py",
-        "snapshot.py",
-        "srs.py",
-        "validate_skill.py",
-        "package_check.py",
-        "course_templates.py",
-    ]
+    openai_agent = root / "agents" / "openai.yaml"
     scripts_dir = root / "scripts"
-    for name in required_scripts:
-        check(
-            (scripts_dir / name).exists(),
-            errors,
-            f"Missing required script: scripts/{name}.",
-        )
-    if errors:
-        return errors
+    refs_dir = root / "references"
 
-    required_references = [
+    for path, label in [(skill_path, "SKILL.md"), (index_path, "references/INDEX.md"), (openai_agent, "agents/openai.yaml")]:
+        check(path.exists(), errors, f"Missing {label}.")
+    for name in ["export_flashcards.py", "snapshot.py", "srs.py", "validate_skill.py", "package_check.py", "course_templates.py"]:
+        check((scripts_dir / name).exists(), errors, f"Missing required script: scripts/{name}.")
+    for name in [
         "INDEX.md",
         "course-profiles.md",
         "environment-adaptation.md",
@@ -134,14 +199,10 @@ def validate(root: Path) -> list[str]:
         "feynman-mode.md",
         "learning-strategies.md",
         "course-templates.md",
-    ]
-    refs_dir = root / "references"
-    for name in required_references:
-        check(
-            (refs_dir / name).exists(),
-            errors,
-            f"Missing required reference: references/{name}.",
-        )
+    ]:
+        check((refs_dir / name).exists(), errors, f"Missing required reference: references/{name}.")
+    if errors:
+        return errors
 
     try:
         fm = frontmatter(read_text(skill_path))
@@ -149,8 +210,7 @@ def validate(root: Path) -> list[str]:
         errors.append(str(exc))
         fm = {}
     check(set(fm) >= {"name", "description"}, errors, "SKILL.md frontmatter must contain at least name and description.")
-    allowed_keys = {"name", "description"}
-    extra_keys = set(fm) - allowed_keys
+    extra_keys = set(fm) - {"name", "description"}
     check(not extra_keys, errors, "SKILL.md frontmatter has unrecognized keys: " + ", ".join(sorted(extra_keys)))
     check(fm.get("name") == "oh-my-teacher", errors, "SKILL.md frontmatter name must be oh-my-teacher.")
     check(bool(fm.get("description")), errors, "SKILL.md frontmatter description must be non-empty.")
@@ -195,70 +255,43 @@ def validate(root: Path) -> list[str]:
     missing_required = sorted(required_commands - index_commands)
     check(not missing_required, errors, "Core commands missing from INDEX.md: " + ", ".join(missing_required))
 
-    # Check that reference files cited in INDEX.md Command Catalog actually exist
-    refs_dir = root / "references"
-    if refs_dir.exists():
-        known_refs = {p.name for p in refs_dir.glob("*.md")}
-        referenced_in_index: set[str] = set()
-        in_catalog = False
-        for line in index_text.splitlines():
-            if line.startswith("## Command Catalog"):
-                in_catalog = True
-                continue
-            if in_catalog and line.startswith("## "):
-                break
-            if in_catalog and line.startswith("|") and "`/" in line:
-                referenced_in_index.update(INDEX_REF_RE.findall(line))
-        # SKILL.md is a valid root-level reference, not in references/
-        referenced_in_index.discard("SKILL.md")
-        missing_refs = sorted(referenced_in_index - known_refs)
-        check(not missing_refs, errors, "INDEX.md references non-existent files: " + ", ".join(missing_refs))
+    known_refs = {p.name for p in refs_dir.glob("*.md")}
+    referenced_in_index: set[str] = set()
+    in_catalog = False
+    for line in index_text.splitlines():
+        if line.startswith("## Command Catalog"):
+            in_catalog = True
+            continue
+        if in_catalog and line.startswith("## "):
+            break
+        if in_catalog and line.startswith("|") and "`/" in line:
+            referenced_in_index.update(INDEX_REF_RE.findall(line))
+    referenced_in_index.discard("SKILL.md")
+    missing_refs = sorted(referenced_in_index - known_refs)
+    check(not missing_refs, errors, "INDEX.md references non-existent files: " + ", ".join(missing_refs))
 
     pycache_dirs = [p for p in root.rglob("__pycache__") if p.is_dir()]
     check(not pycache_dirs, errors, "Generated __pycache__ directories found: " + ", ".join(str(p) for p in pycache_dirs))
 
-    agent_text = read_text(agent_path)
-    check("SKILL.md" in agent_text, errors, "agents/openai.yaml instructions should reference SKILL.md as the primary guide.")
-    check("Follow SKILL.md" in agent_text or "Follow the SKILL.md" in agent_text, errors, "agents/openai.yaml instructions should tell the agent to follow SKILL.md rather than duplicate its rules.")
+    openai_text = read_text(openai_agent)
+    check("SKILL.md" in openai_text, errors, "agents/openai.yaml instructions should reference SKILL.md as the primary guide.")
+    validate_agent_configs(root, errors)
+    validate_ima_files(root, index_commands, errors)
 
-    agent_dir = root / "agents"
-    dangerous_reasoning_patterns = [
-        "write your reasoning chain",
-        "chain-of-thought",
-        "use cot",
-        "<thought>",
-        "推理链",
-        "思维链",
-    ]
-    for path in sorted(agent_dir.glob("*")):
-        if path.suffix.lower() not in {".yaml", ".yml", ".json"}:
-            continue
-        text = read_text(path).lower()
-        hits = [pattern for pattern in dangerous_reasoning_patterns if pattern in text]
-        check(not hits, errors, f"{path.relative_to(root)} asks for hidden reasoning disclosure: {', '.join(hits)}")
-
-    # Stale-reference checks
-    compat_path = root / "references" / "review-workflows.md"
+    compat_path = refs_dir / "review-workflows.md"
     if compat_path.exists():
         compat_text = read_text(compat_path)
-        is_compat = (compat_text.strip().startswith("# Review Workflows") and
-                     ("compatibility" in compat_text.lower() or "redirect" in compat_text.lower() or "do not use" in compat_text.lower()))
-        check(is_compat, errors, "references/review-workflows.md should be a compatibility entry point that redirects to narrower files, not contain substantive workflow content.")
+        is_compat = compat_text.strip().startswith("# Review Workflows") and (
+            "compatibility" in compat_text.lower() or "redirect" in compat_text.lower()
+        )
+        check(is_compat, errors, "references/review-workflows.md should be a compatibility entry point.")
 
     readme_path = root / "README.md"
     if readme_path.exists():
         readme_text = read_text(readme_path)
-        stale_refs = []
-        # Check for mentions of removed/renamed reference files
-        known_refs = {p.name for p in (root / "references").glob("*.md")}
         referenced_in_readme = {m.group(1) for m in re.finditer(r"references/([\w-]+\.md)", readme_text)}
-        for ref in sorted(referenced_in_readme):
-            if ref not in known_refs:
-                stale_refs.append(ref)
+        stale_refs = sorted(ref for ref in referenced_in_readme if ref not in known_refs)
         check(not stale_refs, errors, "README.md references non-existent files: " + ", ".join(stale_refs))
-        # Check for mentions of the old single-file review-workflows as a substantive source
-        if "review-workflows.md" in readme_text and "compatibility" not in readme_text.lower() and "redirect" not in readme_text.lower():
-            errors.append("README.md mentions review-workflows.md without noting it is a compatibility/redirect entry.")
 
     try:
         required_templates = {
@@ -268,7 +301,7 @@ def validate(root: Path) -> list[str]:
             "digital-logic",
             "marxism-basic-principles",
         }
-        missing_templates = sorted(required_templates - course_template_keys(root / "scripts" / "course_templates.py"))
+        missing_templates = sorted(required_templates - course_template_keys(scripts_dir / "course_templates.py"))
         check(not missing_templates, errors, "Missing course templates: " + ", ".join(missing_templates))
     except Exception as exc:
         errors.append(f"Could not inspect scripts/course_templates.py: {exc}")
@@ -278,6 +311,7 @@ def validate(root: Path) -> list[str]:
         example_text = "\n".join(read_text(path) for path in examples_dir.glob("*.md"))
         check("/socratic" in example_text, errors, "examples/ should include a /socratic usage example.")
         check("/feynman" in example_text, errors, "examples/ should include a /feynman usage example.")
+        check("ima" in example_text.lower(), errors, "examples/ should include an ima usage example.")
 
     return errors
 

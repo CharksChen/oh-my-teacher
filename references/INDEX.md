@@ -12,6 +12,8 @@ Load the relevant reference file(s) before executing any command. This index is 
 | 4 | `subject-adaptation.md` | Adapt rigor, notation, examples, and visuals per subject family | Any review task after course profile is built |
 | 5 | `interaction-modes.md` | Select teaching mode: Socratic, examiner, cram, etc. | Before generating questions, explanations, feedback, or mode switches |
 | 6 | `learning-strategies.md` | Evidence-informed learning strategies and selection rules | `/plan`, `/quiz`, `/fix`, `/socratic`, `/feynman`, `/flashcards`, or when choosing how to study |
+| 7 | `ima-adaptation.md` | ima-native tool, memory, note, knowledge-base, report, and PPT routing | Host is ima, user mentions ima/知识库/笔记, or tools include ask_user/fetch/search/memory/use_skill |
+| 8 | `chinese-routing.md` | Chinese natural-language trigger mapping | Chinese request has no slash command or implies an ima-native learning workflow |
 
 Only load files from `examples/` when the user asks for sample sessions, example outputs, behavior comparisons, or regression/reference behavior.
 
@@ -22,7 +24,10 @@ Only load files from `examples/` when the user asks for sample sessions, example
 | `/help` | List commands with one-line descriptions and usage examples, grouped by stage | This index | - |
 | `/profile` | Build a course profile and ask only essential missing questions | `course-profiles.md` | `course-templates.md`, `scripts/course_templates.py` |
 | `/materials` | Ingest uploaded or pasted course files; summarize, update profile, list gaps | `materials-ingestion.md` | `course-profiles.md`, `environment-adaptation.md` |
+| `/source-map` | Build a source-grounded map of course materials, coverage, high-value sources, gaps, and citation anchors | `ima-adaptation.md` | `materials-ingestion.md`, `review-plans.md` |
 | `/paper` | Optimize review for closed-book or open-book paper exams | `course-profiles.md` | `subject-adaptation.md` |
+| `/paper-analyze` | Analyze past papers, sample finals, homework sets, and question banks | `exam-paper-analysis.md` | `ima-adaptation.md`, `course-profiles.md` |
+| `/teacher-emphasis` | Extract teacher emphasis from slides, messages, review notes, starred/highlighted material, and Q&A | `ima-adaptation.md` | `materials-ingestion.md`, `review-plans.md` |
 | `/lab` | Optimize review for lab exams, experiments, reports, and viva questions | `course-profiles.md` | `subject-adaptation.md` |
 | `/diagnose` | Run a 5-question rapid assessment across top chapters | `question-types.md` | `course-profiles.md`, `practice-workflows.md` |
 | `/plan` | Generate a realistic 1/3/7/14/30-day review plan | `review-plans.md` | `course-profiles.md`, `subject-adaptation.md` |
@@ -42,8 +47,13 @@ Only load files from `examples/` when the user asks for sample sessions, example
 | `/video` | Create storyboard, animation plan, or video API workflow | `visual-generation.md` | `environment-adaptation.md` |
 | `/code-demo` | Create runnable code demos or algorithm visualizations | `coding-demos.md` | `subject-adaptation.md`, `environment-adaptation.md` |
 | `/cram` | Use exam-near rescue mode and prioritize scoring yield | `review-plans.md` | `interaction-modes.md` |
+| `/last-page` | Generate the final one-page exam sheet: formulas, templates, traps, timing, and submission checks | `review-plans.md` | `ima-adaptation.md`, `materials-ingestion.md` |
+| `/dashboard` | Generate a Markdown review dashboard with status, heat map, due topics, risks, and next action | `review-plans.md` | `ima-adaptation.md`, `spaced-repetition.md`, `course-profiles.md` |
 | `/resume` | Restore context from a pasted Course Snapshot block | `course-profiles.md` | - |
 | `/summary` | Print a session digest: topics practiced, accuracy changes, weak points, SRS updates, and next step | `practice-workflows.md` | `course-profiles.md`, `spaced-repetition.md` |
+| `/wrong-note` | Create a wrong-question note from grading, quiz, or mock feedback and sync SRS summary | `wrong-note.md` | `question-types.md`, `spaced-repetition.md`, `ima-adaptation.md` |
+| `/report` | Generate a structured stage review or coverage report through ima-report when available | `ima-adaptation.md` | `exam-paper-analysis.md`, `review-plans.md` |
+| `/ppt` | Generate an exam-cram or wrong-question PPT through ima-ppt when available | `ima-adaptation.md` | `review-plans.md`, `wrong-note.md` |
 | `/mode [mode-name]` | Explicitly switch interaction mode for the current task | `interaction-modes.md` | - |
 
 User commands override automatic mode selection for the current task only. Return to automatic mode afterward unless the user asks to stay in a mode.
@@ -60,8 +70,11 @@ When the user runs `/help`, use this exact structure:
 |---------|-------------|
 | /profile | Build a course profile |
 | /materials | Ingest course files |
+| /source-map | Source-grounded material coverage map |
 | /diagnose | Quick 5-question level assessment |
 | /paper | Optimize for paper exams |
+| /paper-analyze | Analyze past papers and question patterns |
+| /teacher-emphasis | Extract teacher emphasis |
 | /lab | Optimize for lab exams |
 
 ## Plan
@@ -69,6 +82,8 @@ When the user runs `/help`, use this exact structure:
 |---------|-------------|
 | /plan | Day-by-day review plan |
 | /map | Concept map and exam priorities |
+| /last-page | Final one-page exam sheet |
+| /dashboard | Review dashboard |
 
 ## Practice
 | Command | Description |
@@ -94,9 +109,12 @@ When the user runs `/help`, use this exact structure:
 | Command | Description |
 |---------|-------------|
 | /review-due | Spaced-repetition due today |
+| /wrong-note | Create wrong-question note |
 | /flashcards | Create and export flashcards |
 | /summary | Session digest |
 | /resume | Restore from pasted snapshot |
+| /report | Stage review report |
+| /ppt | Exam-cram PPT |
 
 ## Modes
 | Command | Description |
@@ -132,6 +150,12 @@ Course profile construction and maintenance. Contains the Current Course Snapsho
 ### `environment-adaptation.md`
 Host capability detection and fallbacks for Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work, NotebookLM, ima, Obsidian, notes apps, RAG notebooks, and ordinary chat boxes.
 
+### `ima-adaptation.md`
+ima-native runtime protocol covering 14 ima tools, 5 native skills, source levels, note-first persistence, knowledge-base retrieval, reports, PPT, and command overrides.
+
+### `chinese-routing.md`
+Chinese natural-language routing table for high-frequency study requests such as 老师划重点, 往年题分析, 整理错题, 今天该复习什么, and 复习 PPT.
+
 ### `materials-ingestion.md`
 How to ingest course files. Covers PDF skill fallback, extraction targets, output contract, incremental ingestion, multi-file merging, and environment-specific ingestion.
 
@@ -153,11 +177,17 @@ Evidence-informed learning strategy guide: retrieval practice, spacing, interlea
 ### `review-plans.md`
 Study maps, review plans, cram mode, progress heat maps, and last-page sheets.
 
+### `exam-paper-analysis.md`
+Past-paper analysis workflow for question distribution, high-frequency topics, scoring patterns, evidence scope, and ima note updates.
+
 ### `practice-workflows.md`
 Active recall, mock exams, error repair, oral rehearsal, and session summaries.
 
 ### `spaced-repetition.md`
 SRS files, due-date calculation, `/review-due`, and automatic SRS updates.
+
+### `wrong-note.md`
+Wrong-question note template and ima workflow for turning graded mistakes into durable note and SRS assets.
 
 ### `group-study.md`
 Group quiz setup, turn-based and buzzer-style sessions, scoreboards, and peer explanation rounds.
