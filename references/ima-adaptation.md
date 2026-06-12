@@ -167,8 +167,8 @@ Every source-grounded output should label important claims as one of:
 - [[错题-YYYY-MM-DD-topic]]
 
 ## SRS Table
-| Topic | Last Review | Score | Streak | Next Review | Difficulty |
-|---|---|---:|---:|---|---|
+| Topic | Last Review | Score | Streak | Next Review | Difficulty | Ease | Lapses |
+|---|---|---:|---:|---|---|---:|---:|
 
 ## Next 3 Actions
 1.

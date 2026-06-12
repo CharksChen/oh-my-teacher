@@ -1,6 +1,6 @@
 # Materials Ingestion
 
-Use when the user uploads or references course files: PDFs, PPTs, notes, homework, lab manuals, or past papers.
+Use when the user uploads or references course files: PDFs, PPTs, notes, homework, lab manuals, or past papers. For turning material analysis into a focused, feedback-driven, iterative review state, use `references/focus-feedback-iteration.md`.
 
 ## Before Processing
 
@@ -25,6 +25,7 @@ From each material, extract:
 - Definitions, theorems, formulas, and standard templates
 - Likely question types and repeated exam patterns
 - Teacher emphasis, starred topics, or "will be on the exam" notes
+- Exam-scope weights, past-paper frequency, and teacher-emphasis strength for chapter ranking
 - Lab steps, instruments, safety notes, or report requirements when relevant
 - Gaps: missing past papers, missing answer keys, unclear assessment scope
 
@@ -45,14 +46,22 @@ After `/materials`, produce this exact section structure so `/map`, `/plan`, and
 ## Priority Map
 [Topic -> priority -> exam action -> confidence]
 
+## Stage 1 Core Review Pack
+[Use `references/staged-review-workflow.md`: must-memorize items with ★★★/★★/★, concept summary, question-type recognition and answer steps, and the mandatory Most Worth Studying Chapters table.]
+
 ## Updated Course Snapshot Fields
 [Materials, Weak points if any, Next recommended]
 
 ## Next Action
 [Usually /map, /plan, or /quiz on the highest-priority gap]
+
+## 本轮闭环
+[重点: highest P0/P1 topic; 反馈: material evidence or missing signal; 下一轮: one concrete diagnostic, drill, upload, or repair action]
 ```
 
 Do not generate a full mock exam immediately after ingestion unless the user asks. Build the map first.
+
+For "most worth studying chapters", always combine exam-scope weight, past-paper frequency, and teacher-emphasis strength when those inputs exist. Use `P0` (must master), `P1` (focused breakthrough), and `P2` (understand / quick scan). If one input is missing, keep the table and mark that column as `unknown` rather than inventing values.
 
 ## Materials Missing or Too Thin
 

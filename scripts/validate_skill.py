@@ -45,6 +45,47 @@ IMA_SKILLS = [
     "ima-report",
     "ima-skill-creator",
 ]
+AGENT_ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
+REQUIRED_AGENT_IDS = {
+    "generic",
+    "codex",
+    "claude",
+    "openclaw",
+    "hermes",
+    "workbuddy",
+    "qoder-work",
+    "trae",
+}
+ALLOWED_AGENT_SOURCE_STATUS = {"baseline", "official", "observed", "community", "unknown"}
+ALLOWED_CAPABILITY_TAGS = {
+    "file-read",
+    "file-write",
+    "shell",
+    "sandbox",
+    "search",
+    "kb-retrieval",
+    "citations",
+    "memory",
+    "task-plan",
+    "subagents",
+    "ide",
+    "rendering",
+    "proactive-message",
+    "scheduler",
+    "unknown",
+}
+ALLOWED_OPTIMIZATION_PROFILES = {
+    "scripted-agent",
+    "file-agent",
+    "retrieval-agent",
+    "memory-agent",
+    "ide-agent",
+    "visual-agent",
+    "planner-agent",
+    "delegating-agent",
+    "reminder-agent",
+    "prompt-agent",
+}
 
 
 def read_text(path: Path) -> str:
@@ -176,6 +217,82 @@ def validate_ima_files(root: Path, index_commands: set[str], errors: list[str]) 
     check(not missing_ima, errors, "ima commands missing from INDEX.md: " + ", ".join(missing_ima))
 
 
+def load_agent_registry(root: Path) -> dict:
+    registry_path = root / "agents" / "registry.json"
+    try:
+        registry = json.loads(read_text(registry_path))
+    except FileNotFoundError as exc:
+        raise ValueError("Missing agents/registry.json.") from exc
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"agents/registry.json is invalid JSON: {exc}") from exc
+    if not isinstance(registry, dict):
+        raise ValueError("agents/registry.json must contain a JSON object.")
+    return registry
+
+
+def validate_agent_registry(root: Path, errors: list[str]) -> None:
+    contract_path = root / "references" / "agent-adapter-contract.md"
+    inventory_path = root / "references" / "agent-inventory.md"
+    check(contract_path.exists(), errors, "Missing references/agent-adapter-contract.md.")
+    check(inventory_path.exists(), errors, "Missing references/agent-inventory.md.")
+    try:
+        registry = load_agent_registry(root)
+    except ValueError as exc:
+        errors.append(str(exc))
+        return
+
+    check(registry.get("contract_path") == "references/agent-adapter-contract.md", errors, "agents/registry.json contract_path is incorrect.")
+    check(registry.get("inventory_path") == "references/agent-inventory.md", errors, "agents/registry.json inventory_path is incorrect.")
+    agents = registry.get("agents")
+    if not isinstance(agents, list) or not agents:
+        errors.append("agents/registry.json must contain a non-empty agents list.")
+        return
+
+    inventory_text = read_text(inventory_path) if inventory_path.exists() else ""
+    seen_ids: set[str] = set()
+    for index, entry in enumerate(agents, 1):
+        if not isinstance(entry, dict):
+            errors.append(f"agents/registry.json agent #{index} must be an object.")
+            continue
+        agent_id = entry.get("id")
+        if not isinstance(agent_id, str) or not AGENT_ID_RE.match(agent_id):
+            errors.append(f"agents/registry.json agent #{index} has invalid id: {agent_id!r}.")
+            continue
+        check(agent_id not in seen_ids, errors, f"Duplicate agent id in registry: {agent_id}.")
+        seen_ids.add(agent_id)
+
+        adapter_path_value = entry.get("adapter_path")
+        check(isinstance(adapter_path_value, str) and adapter_path_value.startswith("agents/"), errors, f"Agent {agent_id} must define an agents/... adapter_path.")
+        if isinstance(adapter_path_value, str):
+            adapter_path = root / adapter_path_value
+            check(adapter_path.exists(), errors, f"Agent {agent_id} adapter does not exist: {adapter_path_value}.")
+            if adapter_path.exists():
+                adapter_text = read_text(adapter_path)
+                for phrase in ["SKILL.md", "agent-adapter-contract.md", "agent-optimization.md", "agent-inventory.md", "Best path:", f'agent_id: "{agent_id}"']:
+                    check(phrase in adapter_text, errors, f"Agent {agent_id} adapter missing {phrase!r}.")
+
+        source_status = entry.get("source_status")
+        check(source_status in ALLOWED_AGENT_SOURCE_STATUS, errors, f"Agent {agent_id} has invalid source_status: {source_status!r}.")
+        capability_tags = entry.get("capability_tags")
+        if not isinstance(capability_tags, list) or not capability_tags:
+            errors.append(f"Agent {agent_id} must define non-empty capability_tags.")
+        else:
+            invalid_tags = sorted({tag for tag in capability_tags if tag not in ALLOWED_CAPABILITY_TAGS})
+            check(not invalid_tags, errors, f"Agent {agent_id} has invalid capability tags: {', '.join(invalid_tags)}.")
+        optimization_profiles = entry.get("optimization_profiles")
+        if not isinstance(optimization_profiles, list) or not optimization_profiles:
+            errors.append(f"Agent {agent_id} must define non-empty optimization_profiles.")
+        else:
+            invalid_profiles = sorted({profile for profile in optimization_profiles if profile not in ALLOWED_OPTIMIZATION_PROFILES})
+            check(not invalid_profiles, errors, f"Agent {agent_id} has invalid optimization profiles: {', '.join(invalid_profiles)}.")
+        check(f"### {agent_id}" in inventory_text, errors, f"references/agent-inventory.md missing record for agent {agent_id}.")
+
+    missing_required = sorted(REQUIRED_AGENT_IDS - seen_ids)
+    check(not missing_required, errors, "Required agent ids missing from registry: " + ", ".join(missing_required))
+    default_agent = registry.get("default_agent")
+    check(default_agent in seen_ids, errors, f"Registry default_agent is not registered: {default_agent!r}.")
+
+
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
     skill_path = root / "SKILL.md"
@@ -186,7 +303,7 @@ def validate(root: Path) -> list[str]:
 
     for path, label in [(skill_path, "SKILL.md"), (index_path, "references/INDEX.md"), (openai_agent, "agents/openai.yaml")]:
         check(path.exists(), errors, f"Missing {label}.")
-    for name in ["export_flashcards.py", "snapshot.py", "srs.py", "validate_skill.py", "package_check.py", "course_templates.py"]:
+    for name in ["export_flashcards.py", "snapshot.py", "srs.py", "validate_skill.py", "package_check.py", "course_templates.py", "build_runtime_prompt.py"]:
         check((scripts_dir / name).exists(), errors, f"Missing required script: scripts/{name}.")
     for name in [
         "INDEX.md",
@@ -199,6 +316,12 @@ def validate(root: Path) -> list[str]:
         "feynman-mode.md",
         "learning-strategies.md",
         "course-templates.md",
+        "agent-adapter-contract.md",
+        "agent-optimization.md",
+        "agent-inventory.md",
+        "staged-review-workflow.md",
+        "focus-feedback-iteration.md",
+        "opt-in-reminders.md",
     ]:
         check((refs_dir / name).exists(), errors, f"Missing required reference: references/{name}.")
     if errors:
@@ -277,6 +400,7 @@ def validate(root: Path) -> list[str]:
     check("SKILL.md" in openai_text, errors, "agents/openai.yaml instructions should reference SKILL.md as the primary guide.")
     validate_agent_configs(root, errors)
     validate_ima_files(root, index_commands, errors)
+    validate_agent_registry(root, errors)
 
     compat_path = refs_dir / "review-workflows.md"
     if compat_path.exists():

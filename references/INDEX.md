@@ -14,6 +14,12 @@ Load the relevant reference file(s) before executing any command. This index is 
 | 6 | `learning-strategies.md` | Evidence-informed learning strategies and selection rules | `/plan`, `/quiz`, `/fix`, `/socratic`, `/feynman`, `/flashcards`, or when choosing how to study |
 | 7 | `ima-adaptation.md` | ima-native tool, memory, note, knowledge-base, report, and PPT routing | Host is ima, user mentions ima/知识库/笔记, or tools include ask_user/fetch/search/memory/use_skill |
 | 8 | `chinese-routing.md` | Chinese natural-language trigger mapping | Chinese request has no slash command or implies an ima-native learning workflow |
+| 9 | `agent-adapter-contract.md` | Shared multi-agent adapter contract and capability tags | Packaging or running the skill in a named agent runtime |
+| 10 | `agent-optimization.md` | Capability-to-best-path optimization profiles for each agent runtime | Running, packaging, validating, or debugging agent-specific adapters |
+| 11 | `agent-inventory.md` | Researched and unknown facts for each agent adapter | Adding, validating, or debugging agent-specific adapters |
+| 12 | `staged-review-workflow.md` | Two-stage materials-to-practice review workflow and Stage 1 core review pack | User asks for phased review, core review materials, or most-worth-studying chapters |
+| 13 | `focus-feedback-iteration.md` | Focus-feedback-iteration loop that keeps review active and adaptive | Any multi-step review, plan, practice, grading, fix, summary, or staged workflow |
+| 14 | `opt-in-reminders.md` | Explicit opt-in proactive reminders and daily/weekly knowledge digest contracts | User explicitly asks to enable, change, stop, or generate reminders, memory prompts, or daily/weekly knowledge summary sheets |
 
 Only load files from `examples/` when the user asks for sample sessions, example outputs, behavior comparisons, or regression/reference behavior.
 
@@ -144,65 +150,34 @@ For detailed fallbacks, load `environment-adaptation.md`. This compact table is 
 
 ## File Overview
 
-### `course-profiles.md`
-Course profile construction and maintenance. Contains the Current Course Snapshot template, field update rules, paper/lab/coding/oral exam optimization, multi-course snapshots, and the exact on-disk snapshot format.
+One line per reference; load on demand per the Load Order and Command Catalog above.
 
-### `environment-adaptation.md`
-Host capability detection and fallbacks for Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work, NotebookLM, ima, Obsidian, notes apps, RAG notebooks, and ordinary chat boxes.
-
-### `ima-adaptation.md`
-ima-native runtime protocol covering 14 ima tools, 5 native skills, source levels, note-first persistence, knowledge-base retrieval, reports, PPT, and command overrides.
-
-### `chinese-routing.md`
-Chinese natural-language routing table for high-frequency study requests such as 老师划重点, 往年题分析, 整理错题, 今天该复习什么, and 复习 PPT.
-
-### `materials-ingestion.md`
-How to ingest course files. Covers PDF skill fallback, extraction targets, output contract, incremental ingestion, multi-file merging, and environment-specific ingestion.
-
-### `subject-adaptation.md`
-Subject-specific defaults for Mathematics, Physics, CS, Chemistry/Biology/Medicine, Economics/Law/History, Foreign Language, Design/Art, Engineering, and Clinical Medicine.
-
-### `interaction-modes.md`
-Teaching modes with selection rules, mixed-mode combinations, response contracts, and mode switching.
-
-### `socratic-mode.md`
-Detailed `/socratic` protocol: one focused question, hint ladder, assumption probes, counterexamples, student summary, and teacher close.
-
-### `feynman-mode.md`
-Detailed `/feynman` protocol: teach-back, curious freshman probing, grading, re-teach prompt, repair card, and SRS update.
-
-### `learning-strategies.md`
-Evidence-informed learning strategy guide: retrieval practice, spacing, interleaving, elaboration, self-explanation, concrete examples, dual coding, pretesting, and analogical comparison.
-
-### `review-plans.md`
-Study maps, review plans, cram mode, progress heat maps, and last-page sheets.
-
-### `exam-paper-analysis.md`
-Past-paper analysis workflow for question distribution, high-frequency topics, scoring patterns, evidence scope, and ima note updates.
-
-### `practice-workflows.md`
-Active recall, mock exams, error repair, oral rehearsal, and session summaries.
-
-### `spaced-repetition.md`
-SRS files, due-date calculation, `/review-due`, and automatic SRS updates.
-
-### `wrong-note.md`
-Wrong-question note template and ima workflow for turning graded mistakes into durable note and SRS assets.
-
-### `group-study.md`
-Group quiz setup, turn-based and buzzer-style sessions, scoreboards, and peer explanation rounds.
-
-### `review-workflows.md`
-Compatibility entry point that points to the narrower workflow files above.
-
-### `question-types.md`
-Adaptive difficulty, question generation defaults, paper exam types, programming types, lab types, and grading rubrics.
-
-### `visual-generation.md`
-Visual selection guide, environment-aware visual matrix, ASCII conventions, image prompt workflow, video storyboard workflow, and dynamic explanation defaults.
-
-### `coding-demos.md`
-Runnable demo guidelines: language inference, algorithm traces, data structure state, simulations, debugging, beginner constraints, animation choices, and environment-aware demo forms.
-
-### `course-templates.md`
-Pre-built course profiles for quick onboarding via `scripts/course_templates.py`. Contains six common university course templates (数据结构与算法, 数学分析, 线性代数, 计算机网络, 操作系统, 大学物理).
+| File | Contents |
+|------|----------|
+| `course-profiles.md` | Current Course Snapshot template, field rules, paper/lab/coding/oral optimization, multi-course snapshots, on-disk format |
+| `environment-adaptation.md` | Host capability detection, capability-probe order, downgrade matrix, per-host output rules |
+| `agent-adapter-contract.md` | Shared multi-agent adapter contract, capability tags, state/script policy, runtime prompt policy |
+| `agent-optimization.md` | Agent launch protocol, optimization profiles, capability-to-behavior mapping, quality gates |
+| `agent-inventory.md` | Agent capability inventory, source status, unknowns, and platform-specific notes |
+| `staged-review-workflow.md` | Stage 1 core review pack, most-worth-studying chapter ranking, Stage 2 mock/weak-point repair workflow |
+| `focus-feedback-iteration.md` | Focus, action, feedback, and iteration contract for active review loops |
+| `opt-in-reminders.md` | Explicit opt-in reminders, proactive-message capability rules, daily/weekly knowledge digests, weak-point and memory-target summaries |
+| `ima-adaptation.md` | ima-native protocol: 14 ima tools, 5 native skills, source levels, note-first persistence, KB retrieval, reports, PPT, command overrides |
+| `chinese-routing.md` | Chinese natural-language trigger → command/workflow mapping |
+| `materials-ingestion.md` | PDF/PPT/note/past-paper ingestion, extraction targets, output contract, incremental + multi-file merge, per-host ingestion |
+| `subject-adaptation.md` | Per-subject rigor, notation, examples, visuals (Math, Physics, CS, Chem/Bio/Med, Econ/Law/History, Language, Design, Engineering, Clinical) |
+| `interaction-modes.md` | Teaching-mode selection rules, mixed modes, response contracts, mode switching |
+| `socratic-mode.md` | `/socratic` protocol: one question, hint ladder, assumptions, counterexamples, student summary, close |
+| `feynman-mode.md` | `/feynman` protocol: teach-back, curious-freshman probing, grading, re-teach, repair card, SRS update |
+| `learning-strategies.md` | Evidence-informed strategies: retrieval, spacing, interleaving, elaboration, self-explanation, examples, dual coding, pretesting, analogy, confidence calibration |
+| `review-plans.md` | Study maps, review plans, cram mode (incl. anxiety handling), heat maps, last-page sheets, dashboard |
+| `exam-paper-analysis.md` | Past-paper analysis: distribution, high-frequency topics, scoring patterns, evidence scope, ima note updates |
+| `practice-workflows.md` | Active recall, mock exams (incl. pacing), error repair, oral rehearsal, session summaries |
+| `spaced-repetition.md` | SRS files, topic naming/dedup, interval+ease algorithm, leech detection, difficulty ownership, `/review-due`, auto-updates |
+| `wrong-note.md` | Wrong-question note template, error taxonomy, ima workflow, SRS sync |
+| `group-study.md` | Group quiz setup, turn-based/buzzer sessions, scoreboards, peer explanation |
+| `question-types.md` | Adaptive difficulty, generation defaults, confidence calibration, paper/programming/lab types, grading rubrics |
+| `visual-generation.md` | Visual selection guide, env-aware matrix, ASCII conventions, image-prompt + video-storyboard workflow |
+| `coding-demos.md` | Runnable demos: language inference, traces, data-structure state, simulations, debugging, beginner constraints, env-aware forms |
+| `course-templates.md` | Pre-built course profiles for quick onboarding via `scripts/course_templates.py` |
+| `review-workflows.md` | Compatibility redirect → review-plans / practice-workflows / spaced-repetition / group-study |

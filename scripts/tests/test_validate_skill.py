@@ -14,12 +14,16 @@ ROOT_DIR = SCRIPT_DIR.parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from validate_skill import (  # noqa: E402
+    ALLOWED_CAPABILITY_TAGS,
+    ALLOWED_OPTIMIZATION_PROFILES,
     DANGEROUS_REASONING_PATTERNS,
     IMA_SKILLS,
     IMA_TOOLS,
+    REQUIRED_AGENT_IDS,
     commands_from_index,
     course_template_keys,
     frontmatter,
+    load_agent_registry,
 )
 
 
@@ -128,6 +132,36 @@ class ValidateSkillTests(unittest.TestCase):
             "marxism-basic-principles",
         ]:
             self.assertIn(template, templates)
+
+    def test_agent_registry_covers_required_agents(self):
+        registry = load_agent_registry(ROOT_DIR)
+        ids = {entry["id"] for entry in registry["agents"]}
+        self.assertTrue(REQUIRED_AGENT_IDS <= ids)
+        self.assertIn(registry["default_agent"], ids)
+
+    def test_agent_registry_adapters_and_inventory_are_consistent(self):
+        registry = load_agent_registry(ROOT_DIR)
+        inventory = (ROOT_DIR / "references" / "agent-inventory.md").read_text(encoding="utf-8")
+        for entry in registry["agents"]:
+            agent_id = entry["id"]
+            adapter = ROOT_DIR / entry["adapter_path"]
+            self.assertTrue(adapter.exists(), f"Missing adapter for {agent_id}")
+            text = adapter.read_text(encoding="utf-8")
+            self.assertIn("SKILL.md", text)
+            self.assertIn("agent-adapter-contract.md", text)
+            self.assertIn("agent-optimization.md", text)
+            self.assertIn("agent-inventory.md", text)
+            self.assertIn("Best path:", text)
+            self.assertIn(f'agent_id: "{agent_id}"', text)
+            self.assertIn(f"### {agent_id}", inventory)
+            self.assertTrue(set(entry["capability_tags"]) <= ALLOWED_CAPABILITY_TAGS)
+            self.assertTrue(set(entry["optimization_profiles"]) <= ALLOWED_OPTIMIZATION_PROFILES)
+            self.assertTrue(entry["optimization_profiles"], f"Missing optimization profile for {agent_id}")
+
+    def test_reminder_capabilities_are_supported_by_validator(self):
+        self.assertIn("proactive-message", ALLOWED_CAPABILITY_TAGS)
+        self.assertIn("scheduler", ALLOWED_CAPABILITY_TAGS)
+        self.assertIn("reminder-agent", ALLOWED_OPTIMIZATION_PROFILES)
 
     def test_cli_passes_for_repo(self):
         script = SCRIPT_DIR / "validate_skill.py"

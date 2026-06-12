@@ -86,8 +86,9 @@ def dashboard_text(workspace: Path, slug: str | None) -> str:
             for r in due:
                 days_over = (today_obj - parse_date(r.next_review)).days
                 marker = "!!!" if days_over >= 3 else (" !!" if days_over >= 1 else "  !")
+                leech = " [LEECH: change strategy]" if r.is_leech() else ""
                 lines.append(f"    {marker} {r.topic:25s} score={r.score} streak={r.streak} "
-                             f"next={r.next_review} (+{days_over}d overdue)")
+                             f"ease={r.ease:.2f} lapses={r.lapses} next={r.next_review} (+{days_over}d overdue){leech}")
         else:
             lines.append("  No topics due today.")
 
@@ -160,8 +161,10 @@ def dashboard_rich(workspace: Path, slug: str | None) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     import argparse
+    import os
     parser = argparse.ArgumentParser(description="Oh My Teacher review dashboard.")
-    parser.add_argument("--workspace", default=".", help="Workspace root.")
+    parser.add_argument("--workspace", default=os.environ.get("OMT_WORKSPACE", "."),
+                        help="Workspace root (default: $OMT_WORKSPACE or current directory).")
     parser.add_argument("--slug", help="Course slug for multi-course mode.")
     parser.add_argument("--active", action="store_true", help="Use active multi-course snapshot.")
     args = parser.parse_args(argv)

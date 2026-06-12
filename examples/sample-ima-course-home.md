@@ -34,9 +34,9 @@
 - [[错题-2026-06-11-级数比较判别法]]
 
 ## SRS Table
-| Topic | Last Review | Score | Streak | Next Review | Difficulty |
-|---|---|---:|---:|---|---|
-| 级数比较判别法 | 2026-06-11 | 2 | 0 | 2026-06-12 | hard |
+| Topic | Last Review | Score | Streak | Next Review | Difficulty | Ease | Lapses |
+|---|---|---:|---:|---|---|---:|---:|
+| 级数比较判别法 | 2026-06-11 | 2 | 0 | 2026-06-12 | hard | 2.10 | 3 |
 
 ## Next 3 Actions
 1. /fix 级数比较判别法

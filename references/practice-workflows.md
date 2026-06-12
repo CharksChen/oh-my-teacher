@@ -1,6 +1,6 @@
 # Practice Workflows
 
-Use this file for active recall, `/mock`, `/oral`, `/fix`, `/summary`, and practice repair loops. For strategy selection rules, see `references/learning-strategies.md`.
+Use this file for active recall, `/mock`, `/oral`, `/fix`, `/summary`, and practice repair loops. For strategy selection rules, see `references/learning-strategies.md`. For keeping the session focused, feedback-driven, and iterative, use `references/focus-feedback-iteration.md`.
 
 ## Active Recall
 
@@ -16,6 +16,8 @@ Formats:
 - Lab operation checklist recall.
 
 After each active-recall round, update the relevant SRS row (see `references/spaced-repetition.md`) so mastered topics are scheduled for future review and struggling topics surface sooner.
+
+Every active-recall round must name the current focus topic, collect a visible answer signal, and end with the next iteration action: repair, repeat, interleave, escalate, de-prioritize, or schedule.
 
 Use three levels per concept:
 
@@ -38,6 +40,24 @@ Specify:
 
 After the user answers, grade with `question-types.md` rules.
 
+### Pacing and Time Management
+
+A mock is also a rehearsal of time allocation — many students lose points not from ignorance but from spending too long on hard items and rushing the rest. Make pacing explicit:
+
+- Assign a per-question or per-section time budget up front, summing to the total time (roughly proportional to marks).
+- Ask the user to log actual time per question (or note where they ran over) when feasible.
+- In the post-mock review, flag pacing problems alongside content errors:
+
+```markdown
+## 节奏复盘
+| 题 | 分值 | 预算 | 实际 | 判断 |
+|---|---|---|---|---|
+| 大题3 | 15 | 18min | 32min | 超时，应在 20min 时战略性跳过 |
+```
+
+- Teach a triage rule: attempt the highest mark-per-minute items first; set a hard cap per question; mark-and-return rather than stall.
+- For machine-graded/OJ exams, pacing = which problems to attempt in what order, not partial credit.
+
 ## Error Repair
 
 When grading or reviewing mistakes:
@@ -50,6 +70,8 @@ When grading or reviewing mistakes:
 6. Add one recognition prompt when the mistake was choosing the wrong method.
 7. Update suggested next review task.
 8. Update the SRS row for this topic (see `references/spaced-repetition.md`); in agent shells prefer `scripts/srs.py update`.
+
+End error repair with the `本轮闭环` footer from `references/focus-feedback-iteration.md`: focus = exact weak point, feedback = evidence from the answer, next round = one targeted action.
 
 ## Oral Exam Rehearsal
 
@@ -100,5 +122,6 @@ For `/summary`, produce:
 - Updated weak points.
 - SRS updates if available.
 - One concrete next step.
+- Focus-feedback-iteration state: current priority focus, strongest feedback signal, and next iteration target.
 
 Keep it short enough to paste into a study log.

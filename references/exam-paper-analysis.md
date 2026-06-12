@@ -28,6 +28,10 @@ Use this file for `/paper-analyze`, past papers, sample finals, question banks, 
 2.
 3.
 
+## Chapter Frequency For Priority Ranking
+| Chapter/topic | Paper count | Question types | Typical wording | Linked teacher/scope evidence | Confidence |
+|---|---:|---|---|---|---|
+
 ## 出题模式
 - 
 

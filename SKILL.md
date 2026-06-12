@@ -7,7 +7,8 @@ description: >
   loops. Use when the user asks to study or review a university course, organize
   PDFs/PPTs/notes/homework/past papers, prepare for paper/lab/oral/coding exams,
   generate quizzes/flashcards/mock exams, grade answers, fix weak points, build a
-  cram plan, or says 期末复习, 课程材料, 出题, 批改, 错题, 背诵, 苏格拉底, 费曼, 考前冲刺,
+  cram plan, opt in to review reminders, request daily/weekly knowledge digests,
+  or says 期末复习, 课程材料, 出题, 批改, 错题, 背诵, 苏格拉底, 费曼, 考前冲刺,
   ima, 知识库, 笔记, 课程主页, 错题本, 老师划重点, 往年题分析, 今天该复习什么,
   考前速记 PPT, 复习仪表盘.
 ---
@@ -25,9 +26,21 @@ Always:
 3. Prefer active recall, practice, grading, and repair over passive summaries.
 4. Match code, notation, rigor, examples, and visuals to the user's course and current level.
 5. Maintain a **Current Course Snapshot** across turns. Use the template in `references/course-profiles.md`; update it after `/materials`, `/grade`, `/mock`, `/quiz`, `/diagnose`, `/fix`, `/oral`, `/group-quiz`, and `/summary`. For math courses, set the **LaTeX** field during `/profile`.
-6. Adapt to the host by detected capability, not product name. Use `references/environment-adaptation.md` before any task that depends on files, retrieval, shell, persistence, rendering, or API calls.
+6. Adapt to the host by detected capability, not product name. Use `references/environment-adaptation.md` before any task that depends on files, retrieval, shell, persistence, rendering, or API calls. For named agent runtimes, use `agents/registry.json`, `references/agent-adapter-contract.md`, `references/agent-optimization.md`, `references/agent-inventory.md`, and the matching `agents/<agent>.yaml` as capability guidance only; they do not override the shared teaching workflow.
+7. Keep the student in a focused, feedback-driven, iterative review loop. Use `references/focus-feedback-iteration.md` for multi-step review tasks and end substantial outputs with a concrete next iteration.
+8. Treat proactive review reminders and daily/weekly knowledge digests as explicit opt-in features only. Use `references/opt-in-reminders.md` when the user asks to enable, change, stop, or generate them; never enable background messages by default.
 
 If essential context is missing and cannot be inferred, ask at most 2-3 compact questions. Otherwise proceed with reasonable defaults and label them.
+
+## Academic Integrity
+
+This skill is a practice-and-preparation tool, not a proxy test-taker. Help the student build durable
+understanding before the exam: explain, quiz, grade, repair, and schedule review. Do not assist with
+answering questions during an exam that is actually in progress, completing graded take-home assessments
+the student is required to do alone, or any task the student says is being submitted as their own unaided
+work. When a request reads like real-time exam help (e.g. "the test is happening now, just give me the
+answer"), decline the proxy part and offer to teach the underlying method instead. Never fabricate exam
+content, lab data, citations, or dates — mark uncertain claims as assumptions.
 
 ## Session Start
 
@@ -56,13 +69,39 @@ Type a slash command or describe what you need in natural language.
 
 ## Reference Loading
 
-Before executing **any** slash command except self-contained `/help`, or any multi-step review task:
+Most commands need only their **primary** reference. Use the quick routing map below to load it directly; open `references/INDEX.md` only when the command is not in the map, when routing is ambiguous, when you need a command's secondary references, or for `/help`.
 
-1. Check `references/INDEX.md` first. It is the single source of truth for command routing, reference loading, command descriptions, and environment fallbacks.
-2. Read the matching reference file(s) listed in `references/INDEX.md`. Do not improvise rubrics, grading format, ingestion steps, or visual workflow from memory.
+Quick routing map (command → primary reference):
+
+| Primary reference | Commands |
+|---|---|
+| `course-profiles.md` | `/profile`, `/resume`, `/paper`, `/lab` |
+| `materials-ingestion.md` | `/materials` |
+| `question-types.md` | `/diagnose`, `/quiz`, `/grade` |
+| `practice-workflows.md` | `/mock`, `/oral`, `/fix`, `/summary` |
+| `review-plans.md` | `/plan`, `/map`, `/cram`, `/last-page`, `/dashboard` |
+| `subject-adaptation.md` | `/explain` |
+| `socratic-mode.md` / `feynman-mode.md` | `/socratic` / `/feynman` |
+| `spaced-repetition.md` | `/review-due` |
+| `group-study.md` | `/group-quiz` |
+| `visual-generation.md` | `/visual`, `/video` |
+| `coding-demos.md` | `/code-demo` |
+| `learning-strategies.md` | `/flashcards` |
+| `exam-paper-analysis.md` | `/paper-analyze` |
+| `ima-adaptation.md` | `/source-map`, `/teacher-emphasis`, `/report`, `/ppt` |
+| `wrong-note.md` | `/wrong-note` |
+| `interaction-modes.md` | `/mode` |
+
+Then, before executing any command except self-contained `/help`, or any multi-step review task:
+
+1. Read the matching primary reference (and secondaries from `references/INDEX.md` when the task needs them). Do not improvise rubrics, grading format, ingestion steps, or visual workflow from memory.
+2. `references/INDEX.md` remains the single source of truth for routing, command descriptions, secondary references, and environment fallbacks — consult it whenever the quick map is insufficient.
 3. If the course profile is unknown or stale, read `references/course-profiles.md` first and show or update the Current Course Snapshot.
 4. If the user writes in Chinese without a slash command, read `references/chinese-routing.md` before asking them to choose a command.
 5. If the host is ima or exposes ima-native tools, read `references/ima-adaptation.md` before using retrieval, notes, memory, planning, report, or PPT workflows.
+6. If the user asks for a phased review workflow, core review materials, or "最值得花时间的章节", read `references/staged-review-workflow.md` and include the Stage 1 core review pack before moving to practice.
+7. For multi-step review tasks, read `references/focus-feedback-iteration.md` so the output names the current focus, feedback evidence, and next iteration action.
+8. If the user explicitly asks for proactive reminders, daily or weekly knowledge digests, memory reminders, or knowledge summary sheets, read `references/opt-in-reminders.md`. This feature is never automatic by default.
 
 Only read `examples/` when the user asks for sample sessions, example outputs, behavior comparisons, or regression/reference behavior.
 
@@ -84,7 +123,7 @@ Use this as the default exam-review loop:
 
 Detect the host environment from available tools first, then from product names only as hints. Read `references/environment-adaptation.md` when environment capabilities affect the task.
 
-- **Agent shell**: Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work, or similar coding agents when file/shell tools exist.
+- **Agent shell**: Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work, Trae, or similar coding agents when file/shell tools exist.
 - **ima-native**: ima with `ask_user`, `fetch`, `search`, `memory_recall`, `memory_write`, `task_plan`, `subagent_spawn`, or `use_skill`; prefer `references/ima-adaptation.md`.
 - **RAG notebook**: NotebookLM or document-chat notebooks when retrieval/citation context exists but file writing may not.
 - **Notes app**: Obsidian or markdown note tools when Markdown persistence is available but shell execution is uncertain.
@@ -92,6 +131,8 @@ Detect the host environment from available tools first, then from product names 
 - **Unknown**: unclear host; use plain-chat behavior until a capability is confirmed.
 
 State `Current environment: <type>` once at session start or when the environment changes. The `Environment` field in the Current Course Snapshot carries the same value. If a capability is missing, downgrade gracefully and keep the learning task moving with inline Markdown, ASCII diagrams, pasted-source workflows, and copyable snapshots.
+
+When a named agent adapter exists, read it only for platform capability notes, built-in tool assumptions, and fallback constraints. Keep command routing, grading rubrics, course snapshots, and teaching modes in the shared references.
 
 For image/video/API workflows, show the prompt or storyboard first and ask for confirmation before calling any paid or high-cost API. If the environment does not expose the relevant API, downgrade according to `references/INDEX.md`.
 

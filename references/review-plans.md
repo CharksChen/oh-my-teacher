@@ -1,6 +1,6 @@
 # Review Plans and Study Maps
 
-Use this file for `/plan`, `/map`, `/cram`, `/last-page`, `/dashboard`, multi-course planning, final review sheets, and progress heat maps. For selecting retrieval, spacing, interleaving, elaboration, self-explanation, and dual coding, see `references/learning-strategies.md`.
+Use this file for `/plan`, `/map`, `/cram`, `/last-page`, `/dashboard`, multi-course planning, final review sheets, and progress heat maps. For selecting retrieval, spacing, interleaving, elaboration, self-explanation, and dual coding, see `references/learning-strategies.md`. For turning the plan into a focus-feedback-iteration loop, see `references/focus-feedback-iteration.md`. For explicit daily/weekly reminders or knowledge digests, see `references/opt-in-reminders.md`.
 
 ## Study Map
 
@@ -9,10 +9,12 @@ Produce:
 - Course profile assumptions.
 - Chapter or knowledge tree.
 - Priority labels: must know, high-yield, hard, quick scan, low priority.
+- A "Most Worth Studying Chapters" table when materials include exam scope, past papers, or teacher emphasis. Rank P0/P1/P2 by exam-scope weight + past-paper frequency + teacher-emphasis strength; mark missing evidence as unknown.
 - Exam actions: memorize, understand, derive, calculate, code, draw, operate.
 - Likely question types and common traps.
 - Next practice set.
 - Progress heat map when the Current Course Snapshot has accuracy or SRS data.
+- Current review loop: focus, feedback evidence, and next iteration target.
 
 If materials include past papers, estimate topic weight from repeated concepts and question types. Avoid claiming certainty.
 
@@ -49,6 +51,7 @@ Include:
 - Error repair after practice.
 - Mock exam near the end.
 - Final 30-minute sheet.
+- A loop line for each day: Focus -> practice/feedback signal -> iteration action.
 
 Modes:
 
@@ -73,6 +76,16 @@ Use when time remaining is short or the user explicitly requests `/cram`.
 - Focus on standard methods, formula conditions, common traps, and high-frequency question types.
 - Prefer short drill loops over long summaries.
 - Produce a final-page sheet and a short "do not waste time on" list.
+
+### Managing Exam Anxiety
+
+Late-stage cramming is as much an emotional state as a knowledge gap; a panicking student retains little. Without being saccharine:
+
+- **Open with a quick win.** Lead with one high-yield item the student can get right now, to break the spiral and create momentum before harder material.
+- **Make the scope finite and concrete.** "3 topics, ~90 minutes" beats an open-ended "study everything" — a bounded plan reduces overwhelm.
+- **Normalize triage.** Explicitly permit skipping low-yield material; "deciding not to study X" is a strategy, not failure.
+- **Protect basics under pressure.** Remind the student that locking in definitions, formulas, and standard templates secures more marks than gambling on the hardest problems.
+- Keep the tone calm and directive. Give the next single action, not a lecture on study habits.
 
 ## Last Page
 
@@ -101,6 +114,9 @@ For `/dashboard`, generate a Markdown dashboard instead of relying on the local 
 
 ## 掌握度热力图
 [topic progress bars]
+
+## 错误类型分布
+[error-category table from wrong notes; see `references/wrong-note.md` → Error-Type Analytics. Omit if no wrong notes yet.]
 
 ## 今日待复习
 | Topic | 原因 | 建议动作 |

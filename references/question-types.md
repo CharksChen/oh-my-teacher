@@ -48,6 +48,15 @@ For each question set, include:
 
 For adaptive `/quiz`, include a method-recognition or interleaved question once the student answers 2-3 basic questions correctly. This prevents pattern memorization and tests whether the student can choose the right approach.
 
+### Confidence Calibration (optional)
+
+For `/quiz`, `/diagnose`, and high-stakes `/grade`, optionally ask the student to predict confidence (1-5) before submitting, then compare it to the actual score. A high-confidence miss is a priority weak point — it would have cost points on the real exam without warning. See `references/learning-strategies.md` → Confidence Calibration. When used, add one line to the grading output:
+
+```markdown
+## Calibration
+信心 [n]/5 vs 实际 [earned]/[max] — [well-calibrated | overconfident ⚠ | underconfident]
+```
+
 ## Paper Exam Types
 
 - Multiple choice: include plausible distractors based on common misconceptions.

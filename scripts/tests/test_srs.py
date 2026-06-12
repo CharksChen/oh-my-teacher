@@ -11,13 +11,18 @@ SCRIPT_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SCRIPT_DIR))
 
 from srs import (  # noqa: E402
+    DEFAULT_EASE,
     INTERVALS,
+    LEECH_THRESHOLD,
     Row,
     markdown_table,
+    next_ease,
     next_interval,
+    normalize_topic,
     parse_date,
     parse_table,
     read_rows,
+    suggest_difficulty,
     updated_row,
     write_rows,
 )
@@ -99,10 +104,12 @@ class UpdatedRowTests(unittest.TestCase):
     def test_score_at_boundary_3_is_high_enough(self):
         import datetime as dt
         today = dt.date(2026, 6, 7)
-        old = Row("topic", "2026-06-01", 5, 4, "2026-06-15")
+        old = Row("topic", "2026-06-01", 5, 4, "2026-06-15")  # ease defaults to 2.5
         new = updated_row("topic", 3, today, old)
         self.assertEqual(new.streak, 5)  # 4 + 1
-        self.assertEqual(new.next_review, "2026-07-07")  # today + 30
+        # score 3 drops ease 2.5 → 2.36; interval int(30 * 1.0 * 2.36/2.5) = 28
+        self.assertEqual(new.ease, 2.36)
+        self.assertEqual(new.next_review, "2026-07-05")  # today + 28
 
     def test_difficulty_affects_next_review(self):
         import datetime as dt
@@ -113,9 +120,10 @@ class UpdatedRowTests(unittest.TestCase):
         new_hard = updated_row("h", 5, today, old_hard, difficulty="hard")
         self.assertEqual(new_easy.streak, 4)
         self.assertEqual(new_hard.streak, 4)
-        # Same streak (4), different intervals: 14*1.4 vs 14*0.6
-        self.assertEqual(new_easy.next_review, "2026-06-26")  # today + 19 (int(14*1.4))
-        self.assertEqual(new_hard.next_review, "2026-06-15")  # today + 8 (int(14*0.6))
+        # score 5 raises ease 2.5 → 2.6 for both; same streak (4), different
+        # difficulty multipliers: int(14*1.4*2.6/2.5)=20 vs int(14*0.6*2.6/2.5)=8
+        self.assertEqual(new_easy.next_review, "2026-06-27")  # today + 20
+        self.assertEqual(new_hard.next_review, "2026-06-15")  # today + 8
 
     def test_new_topic_with_difficulty(self):
         import datetime as dt
@@ -265,6 +273,113 @@ Some trailing text"""
 | topic | 2026-06-01 | 5 | 3 | 2026-06-10 | impossible |"""
         rows = parse_table(text)
         self.assertEqual(rows[0].difficulty, "medium")
+
+    def test_parse_new_8_column_format(self):
+        text = """| Topic | Last Review | Score | Streak | Next Review | Difficulty | Ease | Lapses |
+|-------|-------------|-------|--------|-------------|------------|------|--------|
+| limits | 2026-06-01 | 4 | 2 | 2026-06-04 | hard (困难) | 1.90 | 3 |"""
+        rows = parse_table(text)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].difficulty, "hard")
+        self.assertEqual(rows[0].ease, 1.90)
+        self.assertEqual(rows[0].lapses, 3)
+
+    def test_8_column_defaults_ease_lapses_for_5_and_6_col(self):
+        text = """| Topic | Last Review | Score | Streak | Next Review |
+|-------|-------------|-------|--------|-------------|
+| legacy | 2026-01-01 | 3 | 1 | 2026-01-04 |"""
+        rows = parse_table(text)
+        self.assertEqual(rows[0].ease, DEFAULT_EASE)
+        self.assertEqual(rows[0].lapses, 0)
+
+    def test_8_column_clamps_out_of_range_ease(self):
+        text = """| Topic | Last Review | Score | Streak | Next Review | Difficulty | Ease | Lapses |
+|-------|-------------|-------|--------|-------------|------------|------|--------|
+| hi | 2026-06-01 | 4 | 2 | 2026-06-04 | medium | 9.9 | 0 |
+| lo | 2026-06-01 | 4 | 2 | 2026-06-04 | medium | 0.1 | 0 |"""
+        rows = {r.topic: r for r in parse_table(text)}
+        self.assertEqual(rows["hi"].ease, 2.7)
+        self.assertEqual(rows["lo"].ease, 1.3)
+
+    def test_malformed_row_is_skipped_with_warning(self):
+        import io
+        import contextlib
+        text = """| Topic | Last Review | Score | Streak | Next Review | Difficulty | Ease | Lapses |
+|-------|-------------|-------|--------|-------------|------------|------|--------|
+| good | 2026-01-01 | 3 | 1 | 2026-01-04 | medium | 2.50 | 0 |
+| bad | 2026-01-01 | x | 1 | 2026-01-04 | medium | 2.50 | 0 |"""
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            rows = parse_table(text)
+        self.assertEqual(len(rows), 1)
+        self.assertIn("skipped malformed SRS row", err.getvalue())
+
+
+class EaseTests(unittest.TestCase):
+    def test_score_5_raises_ease(self):
+        self.assertEqual(next_ease(2.5, 5), 2.6)
+
+    def test_score_4_keeps_ease(self):
+        self.assertEqual(next_ease(2.5, 4), 2.5)
+
+    def test_score_3_lowers_ease(self):
+        self.assertEqual(next_ease(2.5, 3), 2.36)
+
+    def test_low_score_drops_ease(self):
+        self.assertEqual(next_ease(2.5, 2), 2.3)
+
+    def test_ease_clamped_to_max(self):
+        self.assertEqual(next_ease(2.7, 5), 2.7)
+
+    def test_ease_clamped_to_min(self):
+        self.assertEqual(next_ease(1.3, 1), 1.3)
+
+    def test_ease_scales_interval(self):
+        # Same streak/difficulty, higher ease → longer interval.
+        low = next_interval(3, "medium", 1.3)
+        high = next_interval(3, "medium", 2.7)
+        self.assertLess(low, high)
+        self.assertEqual(next_interval(3, "medium", 2.5), 7)  # default ease unchanged
+
+
+class LapseAndLeechTests(unittest.TestCase):
+    def test_low_score_increments_lapses(self):
+        import datetime as dt
+        today = dt.date(2026, 6, 7)
+        old = Row("t", "2026-06-01", 4, 2, "2026-06-08", lapses=1)
+        new = updated_row("t", 2, today, old)
+        self.assertEqual(new.lapses, 2)
+
+    def test_high_score_preserves_lapses(self):
+        import datetime as dt
+        today = dt.date(2026, 6, 7)
+        old = Row("t", "2026-06-01", 2, 0, "2026-06-08", lapses=3)
+        new = updated_row("t", 4, today, old)
+        self.assertEqual(new.lapses, 3)
+
+    def test_is_leech_at_threshold(self):
+        row = Row("t", "2026-06-01", 1, 0, "2026-06-02", lapses=LEECH_THRESHOLD)
+        self.assertTrue(row.is_leech())
+        self.assertFalse(Row("t", "2026-06-01", 1, 0, "2026-06-02", lapses=LEECH_THRESHOLD - 1).is_leech())
+
+
+class SuggestDifficultyTests(unittest.TestCase):
+    def test_suggests_easy_when_strong(self):
+        row = Row("t", "2026-06-07", 5, 3, "2026-07-07", difficulty="medium")
+        self.assertEqual(suggest_difficulty(row), "easy")
+
+    def test_suggests_hard_when_lapsing(self):
+        row = Row("t", "2026-06-07", 2, 0, "2026-06-08", difficulty="medium", lapses=2)
+        self.assertEqual(suggest_difficulty(row), "hard")
+
+    def test_no_suggestion_when_steady(self):
+        row = Row("t", "2026-06-07", 3, 1, "2026-06-08", difficulty="medium")
+        self.assertIsNone(suggest_difficulty(row))
+
+
+class NormalizeTopicTests(unittest.TestCase):
+    def test_collapses_whitespace(self):
+        self.assertEqual(normalize_topic("  极限   定义 "), "极限 定义")
 
 
 class FileReadWriteTests(unittest.TestCase):
@@ -466,6 +581,78 @@ class CLIIntegrationTests(unittest.TestCase):
                 "--score", "6", "--today", "2026-06-07",
             ])
             self.assertNotEqual(result.returncode, 0)
+
+    def test_rename_topic(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._run(["--workspace", tmp, "init"])
+            self._run(["--workspace", tmp, "update", "old-name", "--score", "4", "--today", "2026-06-01"])
+            result = self._run(["--workspace", tmp, "rename", "old-name", "new-name"])
+            self.assertEqual(result.returncode, 0, result.stderr)
+            listed = self._run(["--workspace", tmp, "list"])
+            self.assertIn("new-name", listed.stdout)
+            self.assertNotIn("old-name", listed.stdout)
+
+    def test_rename_merges_into_existing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._run(["--workspace", tmp, "init"])
+            self._run(["--workspace", tmp, "update", "dup-a", "--score", "2", "--today", "2026-06-01"])
+            self._run(["--workspace", tmp, "update", "dup-b", "--score", "2", "--today", "2026-06-02"])
+            result = self._run(["--workspace", tmp, "rename", "dup-a", "dup-b"])
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("Merged", result.stderr)
+            listed = self._run(["--workspace", tmp, "list"])
+            self.assertNotIn("dup-a", listed.stdout)
+
+    def test_remove_topic(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._run(["--workspace", tmp, "init"])
+            self._run(["--workspace", tmp, "update", "gone", "--score", "4", "--today", "2026-06-01"])
+            result = self._run(["--workspace", tmp, "remove", "gone"])
+            self.assertEqual(result.returncode, 0, result.stderr)
+            listed = self._run(["--workspace", tmp, "list"])
+            self.assertNotIn("gone", listed.stdout)
+
+    def test_remove_missing_topic_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._run(["--workspace", tmp, "init"])
+            result = self._run(["--workspace", tmp, "remove", "ghost"])
+            self.assertNotEqual(result.returncode, 0)
+
+    def test_fuzzy_duplicate_topic_warns(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._run(["--workspace", tmp, "init"])
+            self._run(["--workspace", tmp, "update", "limits-epsilon-delta", "--score", "4", "--today", "2026-06-01"])
+            result = self._run(["--workspace", tmp, "update", "limits-epsilon-delt", "--score", "4", "--today", "2026-06-02"])
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("similar to existing topic", result.stderr)
+
+    def test_leech_warning_after_repeated_failures(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._run(["--workspace", tmp, "init"])
+            for day in range(1, LEECH_THRESHOLD + 1):
+                result = self._run([
+                    "--workspace", tmp, "update", "stuck",
+                    "--score", "1", "--today", f"2026-06-0{day}",
+                ])
+            self.assertIn("Leech", result.stderr)
+
+    def test_difficulty_preserved_across_updates(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self._run(["--workspace", tmp, "init"])
+            self._run(["--workspace", tmp, "update", "t", "--score", "4",
+                       "--today", "2026-06-01", "--difficulty", "hard"])
+            self._run(["--workspace", tmp, "update", "t", "--score", "4", "--today", "2026-06-05"])
+            listed = self._run(["--workspace", tmp, "list"])
+            self.assertIn("hard", listed.stdout)
+
+    def test_workspace_env_var_used_as_default(self):
+        import os
+        with tempfile.TemporaryDirectory() as tmp:
+            env = dict(os.environ, OMT_WORKSPACE=tmp)
+            script = SCRIPT_DIR / "srs.py"
+            subprocess.run([sys.executable, str(script), "init"],
+                           capture_output=True, text=True, cwd=str(SCRIPT_DIR), env=env)
+            self.assertTrue((Path(tmp) / ".oh-my-teacher" / "srs-state.md").exists())
 
 
 if __name__ == "__main__":

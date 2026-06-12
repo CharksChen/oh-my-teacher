@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -213,8 +214,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Manage Oh My Teacher course snapshots.")
     parser.add_argument(
         "--workspace",
-        default=".",
-        help="Workspace root containing .oh-my-teacher/ (default: current directory).",
+        default=os.environ.get("OMT_WORKSPACE", "."),
+        help="Workspace root containing .oh-my-teacher/ (default: $OMT_WORKSPACE or current directory).",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 

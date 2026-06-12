@@ -15,7 +15,11 @@ A university final-exam review assistant skill. It turns course materials into a
 - **Explain deeply** — Socratic guidance, Feynman teach-back, subject-adaptive tutoring, diagrams, visuals, and runnable code demos.
 - **Export** — turn study notes into Anki/Quizlet flashcards via `scripts/export_flashcards.py`.
 
-It adapts by capability across **agent shells** (Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work), **RAG notebooks** (NotebookLM, ima, document-chat tools), **notes apps** (Obsidian/Markdown PKM), and **plain chat**. See `references/environment-adaptation.md`.
+It adapts by capability across **agent shells** (Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work, Trae), **RAG notebooks** (NotebookLM, ima, document-chat tools), **notes apps** (Obsidian/Markdown PKM), and **plain chat**. See `references/environment-adaptation.md`.
+
+## Academic integrity
+
+Oh My Teacher is a practice-and-preparation tool, not a proxy test-taker. It helps you understand material before the exam — explaining, quizzing, grading, and scheduling review. It does **not** assist with answering questions during an exam in progress or completing assessments you're required to do unaided, and it never fabricates exam content, lab data, or citations. See `SKILL.md` → Academic Integrity.
 
 ## Directory structure
 
@@ -26,12 +30,28 @@ oh-my-teacher/
 ├── SKILL.md                  # Entry point: operating principles, command routing, output style
 ├── README.md                 # This file (human-facing overview)
 ├── agents/
+│   ├── registry.json          # Multi-agent adapter registry and capability hints
+│   ├── generic.yaml           # Conservative fallback adapter for unverified agents
+│   ├── codex.yaml             # Codex-style agent runtime adapter
+│   ├── claude.yaml            # Claude / Claude Code style adapter
+│   ├── openclaw.yaml          # OpenClaw-style adapter
+│   ├── hermes.yaml            # Hermes-style adapter
+│   ├── workbuddy.yaml         # WorkBuddy-style adapter
+│   ├── qoder-work.yaml        # Qoder Work style adapter
+│   ├── trae.yaml              # Trae-style IDE agent adapter
 │   ├── openai.yaml           # OpenAI-facing interface metadata and primary instructions
 │   ├── deepseek.yaml         # DeepSeek-oriented adapter metadata
 │   ├── ollama.yaml           # Local/Ollama-oriented adapter metadata
+│   ├── ima.yaml              # ima-native adapter metadata
 │   └── plugin-dify.json      # Dify plugin metadata
 ├── references/               # Loaded on demand per command (see references/INDEX.md)
 │   ├── INDEX.md              # Single source of truth: command → reference file mapping
+│   ├── agent-adapter-contract.md # Shared adapter contract and capability tags
+│   ├── agent-optimization.md # Capability-to-best-path optimization profiles
+│   ├── agent-inventory.md    # Conservative per-agent capability inventory
+│   ├── staged-review-workflow.md # Two-stage materials-to-practice review workflow
+│   ├── focus-feedback-iteration.md # Focus → feedback → iteration review loop
+│   ├── opt-in-reminders.md   # Explicit opt-in reminders and daily/weekly digests
 │   ├── course-profiles.md    # Course snapshot, multi-course handling, persistence
 │   ├── environment-adaptation.md# Host capability detection and fallbacks
 │   ├── materials-ingestion.md# Ingesting PDFs/PPTs/notes/past papers
