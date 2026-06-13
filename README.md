@@ -1,135 +1,128 @@
-# Oh My Teacher
+# Oh My Teacher 中文定制版
 
-A university final-exam review assistant skill. It turns course materials into a focused study plan, practices you with adaptive quizzes and mock exams, grades your answers strictly, tracks your weak points with spaced repetition, and explains hard concepts with diagrams and runnable code.
+面向中文高校期末复习场景的 AI 助教 Skill。它会把课件、笔记、往年题、作业和实验资料整理成复习计划，用自适应练习和模拟考试训练你，严格批改答案，沉淀错题本，并用间隔复习追踪薄弱点。
 
-> This is a **skill** — its behavior is defined by Markdown instructions that an LLM agent reads, not by a running program. `SKILL.md` is the entry point the model loads; the rest of the files are references it pulls in on demand.
+> 这是一个 **Skill**：核心行为由 `SKILL.md` 和 `references/` 里的 Markdown 指令定义，供支持 Skill 的大模型 Agent 读取。它不是一个常驻运行的应用程序。
 
-## What it does
+## 适合谁用
 
-- **Profile a course** — infer the course, exam format, subject, your level, and time remaining.
-- **Diagnose weak points** — a quick `/diagnose` pass calibrates where you stand before planning.
-- **Plan & map** — realistic day-by-day review plans and exam-weighted concept maps.
-- **Practice** — adaptive `/quiz`, timed `/mock` exams, `/oral` rehearsal, and `/group-quiz` sessions.
-- **Grade strictly** — answer grading tuned to catch the mistakes that lose real exam points.
-- **Spaced repetition** — `/review-due` schedules topics so you revisit them at the right time.
-- **Explain deeply** — Socratic guidance, Feynman teach-back, subject-adaptive tutoring, diagrams, visuals, and runnable code demos.
-- **Export** — turn study notes into Anki/Quizlet flashcards via `scripts/export_flashcards.py`.
+- 期末前需要快速建立课程复习计划的大学生。
+- 想把 PPT、PDF、课堂笔记、学习通/雨课堂资料、题库或往年题整理成考点的人。
+- 需要有人严格批改答案、指出扣分点、追踪错题的人。
+- 需要苏格拉底追问、费曼讲解、背诵卡片、口试模拟或机考/OJ 训练的人。
+- 想在 Codex、Claude Code、ima、NotebookLM、Obsidian 或普通聊天框里复用同一套复习流程的人。
 
-It adapts by capability across **agent shells** (Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, Qoder Work, Trae), **RAG notebooks** (NotebookLM, ima, document-chat tools), **notes apps** (Obsidian/Markdown PKM), and **plain chat**. See `references/environment-adaptation.md`.
+## 它能做什么
 
-## Academic integrity
+- **课程画像**：自动识别课程、考试形式、剩余时间、资料范围和薄弱点。
+- **资料摄取**：整理 PDF、PPT、笔记、实验指导书、题库、作业和往年题。
+- **重点提炼**：处理“老师划重点”“复习提纲”“高频考点”“最值得花时间的章节”。
+- **复习计划**：生成 1/3/7/14/30 天计划、考点地图、考前一页纸和复习仪表盘。
+- **主动练习**：自适应 `/quiz`、限时 `/mock`、口试 `/oral`、小组 `/group-quiz`。
+- **严格批改**：按真实考试扣分逻辑指出错因、失分点、标准答案和补救练习。
+- **错题闭环**：生成错题本、错误类型分布、SRS 到期复习和下一轮修复任务。
+- **深度讲解**：支持苏格拉底引导、费曼复述、图示讲解和可运行代码演示。
+- **闪卡导出**：把复习卡片导出为 Anki/Quizlet 友好的 CSV/TSV。
 
-Oh My Teacher is a practice-and-preparation tool, not a proxy test-taker. It helps you understand material before the exam — explaining, quizzing, grading, and scheduling review. It does **not** assist with answering questions during an exam in progress or completing assessments you're required to do unaided, and it never fabricates exam content, lab data, or citations. See `SKILL.md` → Academic Integrity.
+## 学术诚信 Academic Integrity
 
-## Directory structure
+Oh My Teacher 是备考和训练工具，不是代考或代写工具。它会帮助你在考试前理解、练习、批改和复盘；不会帮助你完成正在进行的考试、必须独立提交的计分作业、课程论文或实验报告，也不会编造考试内容、实验数据、引用或日期。
 
-```
+## 目录结构
+
+```text
 oh-my-teacher/
-├── .github/workflows/ci.yml  # GitHub Actions: runs package checks
-├── .gitattributes            # Normalizes text file line endings
-├── SKILL.md                  # Entry point: operating principles, command routing, output style
-├── README.md                 # This file (human-facing overview)
-├── agents/
-│   ├── registry.json          # Multi-agent adapter registry and capability hints
-│   ├── generic.yaml           # Conservative fallback adapter for unverified agents
-│   ├── codex.yaml             # Codex-style agent runtime adapter
-│   ├── claude.yaml            # Claude / Claude Code style adapter
-│   ├── openclaw.yaml          # OpenClaw-style adapter
-│   ├── hermes.yaml            # Hermes-style adapter
-│   ├── workbuddy.yaml         # WorkBuddy-style adapter
-│   ├── qoder-work.yaml        # Qoder Work style adapter
-│   ├── trae.yaml              # Trae-style IDE agent adapter
-│   ├── openai.yaml           # OpenAI-facing interface metadata and primary instructions
-│   ├── deepseek.yaml         # DeepSeek-oriented adapter metadata
-│   ├── ollama.yaml           # Local/Ollama-oriented adapter metadata
-│   ├── ima.yaml              # ima-native adapter metadata
-│   └── plugin-dify.json      # Dify plugin metadata
-├── references/               # Loaded on demand per command (see references/INDEX.md)
-│   ├── INDEX.md              # Single source of truth: command → reference file mapping
-│   ├── agent-adapter-contract.md # Shared adapter contract and capability tags
-│   ├── agent-optimization.md # Capability-to-best-path optimization profiles
-│   ├── agent-inventory.md    # Conservative per-agent capability inventory
-│   ├── staged-review-workflow.md # Two-stage materials-to-practice review workflow
-│   ├── focus-feedback-iteration.md # Focus → feedback → iteration review loop
-│   ├── opt-in-reminders.md   # Explicit opt-in reminders and daily/weekly digests
-│   ├── course-profiles.md    # Course snapshot, multi-course handling, persistence
-│   ├── environment-adaptation.md# Host capability detection and fallbacks
-│   ├── materials-ingestion.md# Ingesting PDFs/PPTs/notes/past papers
-│   ├── subject-adaptation.md # Per-subject rigor, notation, and visuals
-│   ├── interaction-modes.md  # Teaching modes (Socratic, examiner, cram, …)
-│   ├── socratic-mode.md      # Detailed /socratic protocol
-│   ├── feynman-mode.md       # Detailed /feynman protocol
-│   ├── learning-strategies.md# Retrieval, spacing, interleaving, Feynman, Socratic, dual coding, etc.
-│   ├── review-workflows.md   # ⚠ Compatibility redirect → see review-plans.md, practice-workflows.md, spaced-repetition.md, group-study.md
-│   ├── review-plans.md       # /plan, /map, /cram, last-page sheets, heat maps
-│   ├── practice-workflows.md # Active recall, /mock, /oral, /fix, /summary
-│   ├── spaced-repetition.md  # /review-due, SRS files, due-date calculation
-│   ├── group-study.md        # /group-quiz, turn-based groups, scoreboards
-│   ├── question-types.md     # Question generation and grading rubrics
-│   ├── visual-generation.md  # Diagrams, image/video API workflows
-│   └── coding-demos.md       # Runnable code demos and algorithm traces
-├── examples/                 # Worked sessions and sample artifacts
-│   ├── sample-session.md     # Math analysis (paper exam) walkthrough
-│   ├── sample-session-cs.md  # Data structures (machine-graded OJ) walkthrough
-│   ├── sample-interaction-modes.md # Socratic and Feynman mode walkthrough
-│   ├── sample-course-profile.md
-│   └── sample-cards.md       # All supported flashcard formats
+├── SKILL.md                  # 入口：运行原则、命令路由、输出风格
+├── README.md                 # 中文社区说明页
+├── agents/                   # 多 Agent 适配元数据
+│   ├── registry.json
+│   ├── openai.yaml
+│   ├── ima.yaml
+│   ├── codex.yaml
+│   └── ...
+├── references/               # 按命令懒加载的详细工作流
+│   ├── INDEX.md              # 命令到 reference 的唯一事实来源
+│   ├── chinese-routing.md    # 中文自然语言触发词映射
+│   ├── course-profiles.md    # 课程画像与快照
+│   ├── materials-ingestion.md# 资料摄取
+│   ├── question-types.md     # 出题和评分 rubric
+│   ├── review-plans.md       # 复习计划、考点地图、冲刺
+│   ├── practice-workflows.md # 模考、口试、修复、总结
+│   ├── spaced-repetition.md  # 间隔复习状态
+│   ├── wrong-note.md         # 错题本
+│   ├── ima-adaptation.md     # ima 知识库/笔记/报告/PPT 适配
+│   └── ...
+├── examples/                 # 示例会话和示例产物
 └── scripts/
-    ├── export_flashcards.py  # Markdown → Anki/Quizlet CSV/TSV
-    ├── snapshot.py           # Course snapshot save/load/list/set-active + state.json
-    ├── srs.py                # Spaced-repetition init/update/due/list/set-active
-    ├── course_templates.py   # Course template lookup helpers
-    ├── build_runtime_prompt.py# Build compact runtime prompts for agent adapters
-    ├── dashboard.py          # Local dashboard helpers
-    ├── verify_math.py        # Lightweight math expression verification helper
-    ├── validate_skill.py     # Skill package validation (commands, refs, stale checks)
-    ├── package_check.py      # Unified entry point: runs validate_skill.py + all unit tests
-    └── tests/                # Unit + CLI tests for all scripts
+    ├── export_flashcards.py  # Markdown 卡片 -> CSV/TSV
+    ├── snapshot.py           # 课程快照保存/加载
+    ├── srs.py                # 间隔复习状态管理
+    ├── validate_skill.py     # 结构校验
+    └── package_check.py      # 一键验证
 ```
 
-## Commands
+## 常用命令
 
-Type a slash command or describe what you want in natural language. Full list and routing in `SKILL.md` → Command Routing and `references/INDEX.md`. Highlights:
+可以输入斜杠命令，也可以直接说中文需求，例如“帮我看这套往年题怎么复习”“还有三天考试救一下”“把这些 PPT 整理成计划”。
 
-| Stage | Commands |
-|-------|----------|
-| Setup | `/profile`, `/materials`, `/diagnose`, `/paper`, `/lab` |
-| Plan | `/plan`, `/map` |
-| Practice | `/quiz`, `/mock`, `/oral`, `/group-quiz`, `/grade`, `/fix` |
-| Explain | `/explain`, `/socratic`, `/feynman`, `/visual`, `/video`, `/code-demo` |
-| Track & Export | `/review-due`, `/flashcards`, `/summary`, `/resume` |
-| Modes | `/mode`, `/cram`, `/help` |
+| 阶段 | 命令 |
+|------|------|
+| 建档与资料 | `/profile`, `/materials`, `/diagnose`, `/paper`, `/paper-analyze`, `/teacher-emphasis`, `/lab` |
+| 计划 | `/plan`, `/map`, `/last-page`, `/dashboard` |
+| 练习 | `/quiz`, `/mock`, `/oral`, `/group-quiz`, `/grade`, `/fix` |
+| 讲解 | `/explain`, `/socratic`, `/feynman`, `/visual`, `/video`, `/code-demo` |
+| 追踪与导出 | `/review-due`, `/wrong-note`, `/flashcards`, `/summary`, `/resume`, `/report`, `/ppt` |
+| 模式 | `/mode`, `/cram`, `/help` |
 
-## Course templates
+默认复习闭环：
 
-Quick-start templates cover common university courses:
+```text
+/profile -> /materials -> /diagnose -> /plan -> /quiz | /socratic | /feynman -> /grade -> /fix -> /review-due -> /summary
+```
 
-- `advanced-math` — 高等数学
-- `physics` — 大学物理 / 普通物理
-- `programming-c-cpp` — 程序设计（C/C++）
-- `digital-logic` — 数字电路与逻辑设计
-- `marxism-basic-principles` — 马克思主义基本原理
-- plus data structures, math analysis, linear algebra, computer networks, operating systems, and university physics aliases
+## 中文场景适配
 
-## Flashcard export
+内置触发词覆盖常见中文复习说法：
+
+- “老师说这些是重点”“老师划的重点”
+- “帮我看往年题怎么复习”“分析这套卷子”
+- “整理错题”“做个错题本”
+- “今天该复习什么”
+- “还有三天考试，救一下”
+- “做考前速记”“生成复习 PPT”
+- “把知识库资料变成计划”
+- “闭卷怎么背”“机考怎么练”“实验考口试怎么准备”
+
+中文自然语言路由由 `references/chinese-routing.md` 维护。
+
+## 课程模板
+
+内置常见课程模板，便于快速建档：
+
+- `advanced-math`：高等数学
+- `physics`：大学物理 / 普通物理
+- `programming-c-cpp`：程序设计（C/C++）
+- `digital-logic`：数字电路与逻辑设计
+- `marxism-basic-principles`：马克思主义基本原理
+- 另含数据结构、数学分析、线性代数、计算机网络、操作系统、大学物理等别名
+
+## 闪卡导出
 
 ```bash
-# Single file
-python scripts/export_flashcards.py cards.md cards.csv --deck "Final"
+# 单文件导出
+python scripts/export_flashcards.py cards.md cards.csv --deck "期末复习"
 
-# Merge several per-topic files, dropping duplicates
+# 合并多个主题并去重
 python scripts/export_flashcards.py limits.md integrals.md all.csv --dedup
 
-# Quizlet-friendly cloze expansion / TSV output
+# Quizlet 友好的 cloze 展开 / TSV 输出
 python scripts/export_flashcards.py cards.md out.csv --expand-cloze
 python scripts/export_flashcards.py cards.md out.tsv --format tsv
 ```
 
-See `examples/sample-cards.md` for every supported card format.
+支持格式见 `examples/sample-cards.md`。
 
-## Development
-
-Minimal commands:
+## 开发与校验
 
 ```bash
 python scripts/package_check.py
@@ -138,25 +131,23 @@ python scripts/course_templates.py list
 python scripts/export_flashcards.py examples/sample-cards.md cards.csv --dedup
 ```
 
-Run all validation checks and tests in one command:
+一键运行结构校验和单元测试：
 
 ```bash
 python scripts/package_check.py
 ```
 
-Or run them individually:
+单独运行：
 
 ```bash
-python scripts/validate_skill.py          # Structural checks and stale-reference detection
-python -m unittest discover -s scripts/tests -v   # Unit and CLI tests
+python scripts/validate_skill.py
+python -m unittest discover -s scripts/tests -v
 ```
 
-GitHub Actions runs `python scripts/package_check.py` on push and pull request.
+贡献或改写时注意：
 
-### Contributing notes
-
-- **Commands** are the contract. When you add or rename one, update **both** `SKILL.md` → Command Routing **and** `references/INDEX.md` (the per-command map). INDEX.md is the single source of truth the model consults at runtime.
-- **Reference files** are loaded lazily to save tokens. Keep each one focused on its topic and cross-link rather than duplicate.
-- **Learning strategies** live in `references/learning-strategies.md`. Add strategy logic there first, then route specific commands to it.
-- **Don't fabricate.** The skill's instructions forbid inventing exam content, lab data, or dates. Preserve that discipline in any new workflow.
-- Keep example sessions in sync when command behavior changes.
+- **命令是契约**：新增或改名命令时，同时更新 `SKILL.md` 和 `references/INDEX.md`。
+- **reference 懒加载**：详细流程放在 `references/`，不要把所有内容塞进 `SKILL.md`。
+- **中文路由**：新增中文触发词优先放进 `references/chinese-routing.md`。
+- **不要编造**：保留学术诚信约束，不虚构考题、实验数据、引用或老师要求。
+- **示例同步**：命令行为变化时，同步更新 `examples/`。

@@ -1,15 +1,15 @@
 # Course Profiles
 
-Build a course profile before major review work. If the user provided enough clues, infer silently and state assumptions briefly.
+重大复习任务前先建立课程画像。用户已经给出足够线索时，直接推断并简短说明假设，不要让用户填长表。
 
 ## Snapshot Template
 
-Maintain and update a compact snapshot across turns. Show it at the start of major tasks (`/materials`, `/diagnose`, `/plan`, `/map`, `/mock`, `/grade`, `/fix`, `/quiz`, `/oral`, `/group-quiz`, `/summary`) unless the same course context is already clear in the current session.
+跨轮维护紧凑 snapshot。重大任务开头展示或更新它（`/materials`, `/diagnose`, `/plan`, `/map`, `/mock`, `/grade`, `/fix`, `/quiz`, `/oral`, `/group-quiz`, `/summary`），除非当前会话里课程上下文已经很清楚。
 
 ```markdown
 ## Current Course Snapshot
 - **Course**: [name + subject family]
-- **Assessment**: [format]
+- **Assessment**: [闭卷/开卷/半开卷/机考/OJ/实验考/口试/论文/答辩/混合]
 - **Days left**: [N days or unknown]
 - **Level**: [beginner / shaky / basic ok / high-score / pass-only]
 - **Environment**: [agent-shell / rag-notebook / notes-app / plain-chat / unknown]
@@ -32,43 +32,52 @@ Update rules:
 - After `/summary`: consolidate session topics into **Completed**, refresh **Accuracy** summary, set **Last action** to `/summary`, update **Next recommended**
 - After `/profile` or new course info: rebuild the full snapshot; set **Level** from user declaration (high-score / pass-only are goals, not performance metrics)
 - After environment detection or a clear environment change: refresh **Environment** using `references/environment-adaptation.md`
-- For mathematics courses, ask at session start which LaTeX rendering the user needs (rendered / plain-text); set **LaTeX** accordingly
+- For mathematics courses, use the LaTeX auto-detection flow in `references/subject-adaptation.md`; do not ask an abstract rendering-preference question first
 - Keep **Weak points** short: topic labels, not paragraphs
 
 ## Required Fields
 
 - Course name and subject family
 - Assessment format: paper exam, lab exam, coding/on-machine exam, oral exam, open-book, closed-book, course project, mixed assessment
+- 中文考试形式同义词：闭卷、开卷、半开卷、一页纸、机考、OJ、实验考、操作考、口试、课程论文、大作业、答辩、平时分+期末混合
 - Course nature: theoretical proof, computation/application, programming practice, lab operation, memorization/essay, case analysis
 - User level: beginner, learned but shaky, can solve basic problems, high-score target, pass-only target
   - **Note**: `pass-only` and `high-score` are user-declared goals (set during `/profile`), not inferred from performance. They override performance-based level assignments.
 - Constraints: exam date, daily available time, target score, materials available, past papers, teacher emphasis
 
+中文 `/profile` 最多问三件事：
+
+1. 这门课叫什么，考试形式是什么？例如闭卷、开卷、机考、实验考、口试。
+2. 还有几天，每天大概能复习多久，目标是及格还是冲高分？
+3. 现在最卡的是概念、证明、计算、代码、实验操作、背诵，还是没有资料头绪？
+
+如果用户只回答一部分，先建立低置信画像并推进 `/diagnose` 或 `/materials`，不要反复追问。
+
 ## Paper Exam Optimization
 
 Use when the assessment is written, closed-book/open-book, or likely traditional final exam.
 
-Prioritize:
+笔试优先：
 
-- Exam map: chapters, weights, likely question types
-- Definitions, theorem conditions, formulas, templates, standard steps
-- Timed drills, mock papers, answer rubrics
-- Last-page review sheet for final 30 minutes
-- Common traps and scoring opportunities
+- 考试地图：章节、权重、可能题型。
+- 定义、定理条件、公式、模板、标准步骤。
+- 限时训练、模拟卷、答案 rubric。
+- 最后 30 分钟的一页纸。
+- 常见坑和得分机会。
 
-For open-book exams, emphasize navigation, index pages, problem-solving templates, and avoiding time lost searching materials.
+开卷/半开卷强调资料索引、页码定位、题型模板和避免考试时翻资料耗时。半开卷/一页纸要优先压缩成“公式条件 + 模板 + 易错点”，不要堆完整讲义。
 
 ## Lab Exam Optimization
 
 Use when the assessment involves experiments, operation, reports, practical demonstrations, or lab viva.
 
-Prioritize:
+实验考优先：
 
-- Experiment principle and what variable each step controls
-- Instrument setup, operation sequence, safety/handling notes
-- Data recording table, calculation workflow, uncertainty/error analysis
-- Common failed operations and how to recover
-- Lab report structure and oral defense questions
+- 实验原理，以及每一步控制什么变量。
+- 仪器设置、操作顺序、安全/处理注意事项。
+- 数据记录表、计算流程、不确定度/误差分析。
+- 常见失败操作和补救。
+- 实验报告结构和口试/答辩问题。
 
 Subject-specific lab emphasis:
 
@@ -79,30 +88,30 @@ Subject-specific lab emphasis:
 
 ## Coding or On-Machine Exam
 
-Prioritize:
+机考/OJ 优先：
 
-- Known language subset and allowed libraries
-- Common input/output patterns
-- Boundary cases, time complexity, debugging and test construction
-- Small runnable examples before large solutions
-- Exam scoring: partial credit for algorithm idea, data structure, correctness, and complexity
+- 已学语言范围和允许库。
+- 常见输入输出格式。
+- 边界情况、时间复杂度、调试和测试构造。
+- 大题解前先用小例子跑通。
+- 评分点：算法思路、数据结构、正确性、复杂度。
 
 ## Oral Exam
 
-Prioritize:
+口试/答辩优先：
 
-- Short explainable definitions and examples
-- Progressive questioning: basic, application, edge case, comparison
-- Response templates: "definition -> condition -> example -> common pitfall"
-- Confidence repair through short repeated answers
+- 能在 30-60 秒说清的定义和例子。
+- 递进追问：基础、应用、边界、对比。
+- 回答模板：定义 -> 条件 -> 例子 -> 常见坑。
+- 用短回答反复练，修复表达和信心。
 
 ## Unknown Course
 
 Ask at most these three questions:
 
-1. What course and assessment format is this?
-2. How much time remains and what score goal do you have?
-3. What is currently hardest: concepts, proofs, calculations, coding, experiments, or memorization?
+1. 这是什么课，怎么考？
+2. 还有多久，每天能复习多久，目标分/目标档位是什么？
+3. 现在最难的是概念、证明、计算、代码、实验还是背诵？
 
 ## Snapshot On-Disk Format
 

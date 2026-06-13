@@ -1,6 +1,6 @@
 # Wrong Question Notes
 
-Use this file for `/wrong-note` and for wrong-answer follow-up after `/grade`, `/quiz`, or `/mock`.
+用于 `/wrong-note`，以及 `/grade`、`/quiz`、`/mock` 后的错题跟进。错题本不是收藏夹；每条错题必须能指导下一次修复和间隔复习。
 
 ## ima Workflow
 
@@ -14,6 +14,12 @@ Use this file for `/wrong-note` and for wrong-answer follow-up after `/grade`, `
 
 ```markdown
 # 错题：[topic]
+
+## 来源
+- 课程:
+- 来源: [往年题/题库/PPT/作业/模拟/用户自写]
+- 题型:
+- 分值/扣分估计:
 
 ## 题目
 
@@ -32,6 +38,9 @@ Use this file for `/wrong-note` and for wrong-answer follow-up after `/grade`, `
 
 ## 最小错误点
 
+## 同类题识别
+[看到哪些关键词/条件/图形/输入格式时，应该想到这个方法]
+
 ## 修复说明
 
 ## 变式题
@@ -44,6 +53,8 @@ Use this file for `/wrong-note` and for wrong-answer follow-up after `/grade`, `
 - Difficulty:
 - Tags: #错题 #[课程名] #[topic]
 ```
+
+若用户临考，只保留“来源、错因分类、最小错误点、正确版本、同类题识别、下次复习”，不要写成长笔记。
 
 ## Error Taxonomy
 
@@ -85,3 +96,14 @@ Return:
 - next review
 - one immediate repair drill
 - whether ima-note and memory_write succeeded, or a Markdown fallback if not
+
+中文默认回复：
+
+```markdown
+已生成错题：[title]
+- 主题:
+- 主错因:
+- 下次复习:
+- 立即修复:
+- 保存状态: [ima-note / memory_write / Markdown fallback]
+```

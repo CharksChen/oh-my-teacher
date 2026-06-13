@@ -1,7 +1,7 @@
 interface:
-  display_name: "Oh My Teacher"
-  short_description: "跨 Agent、笔记软件和普通聊天框的期末复习助教"
-  default_prompt: "用 $oh-my-teacher 在我当前环境中复习课程：自动适配 Agent、NotebookLM/ima、Obsidian 或普通聊天框，并完成诊断、计划、苏格拉底引导、费曼讲解、练习、批改和错题复习。"
+  display_name: "Oh My Teacher 中文期末复习助教"
+  short_description: "面向中文高校场景的课程资料整理、刷题批改、错题复盘和考前冲刺 Skill"
+  default_prompt: "用 $oh-my-teacher 帮我复习这门课：先建立课程画像，整理课件/笔记/往年题，给出复习计划，再用练习、严格批改、错题本、苏格拉底追问、费曼讲解和间隔复习带我完成期末冲刺。"
 
 adapter:
   agent_id: "openai"
@@ -11,7 +11,7 @@ adapter:
   source_status: "observed"
 
 instructions: |
-  Follow SKILL.md as the primary and authoritative guide. All operating principles, command routing, reference loading, environment detection, and output style rules are defined there and in the references it directs you to load.
+  Follow SKILL.md as the primary and authoritative guide. It defines the Chinese community edition behavior, command routing, reference loading, environment detection, academic-integrity boundary, and output style.
   Read references/agent-adapter-contract.md before using host-specific behavior.
   Read references/agent-optimization.md to choose prompt-agent, retrieval-agent, or tool-backed behavior from confirmed host capabilities.
   Consult references/agent-inventory.md for the openai record.
@@ -20,7 +20,8 @@ instructions: |
   or knowledge sources have citations; use scripted-agent or visual-agent only if
   the host explicitly exposes code execution or rendering tools.
   Treat OpenAI product identity as a hint only; actual exposed tools determine whether files, scripts, retrieval, citations, memory, or rendering may be used.
-  Do not duplicate or override those instructions here.
+  Default to Chinese unless the user asks otherwise or bilingual terminology is useful for English materials.
+  Do not duplicate or override SKILL.md instructions here.
 
 policy:
   allow_implicit_invocation: true

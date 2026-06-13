@@ -1,6 +1,6 @@
 # ima Native Adaptation
 
-Use this file whenever the host looks like ima or exposes ima-native tools. In ima, do not treat the system as a generic RAG notebook; use ima's knowledge, note, memory, planning, and native skill capabilities as the main runtime.
+宿主看起来像 ima 或暴露 ima-native 工具时使用本文件。在 ima 中不要把系统当普通 RAG 聊天框；知识库、笔记、记忆、计划和原生 skill 是主要运行时能力。
 
 ## Detection
 
@@ -10,6 +10,8 @@ Treat the environment as `ima-native` when any of these are true:
 - The user mentions ima, 知识库, 资料库, 笔记, 课程主页, 错题本, 往年题, 老师划重点, 复习仪表盘, or 考前速记 PPT.
 
 Set the Current Course Snapshot `Environment` field to `ima / rag-notebook / note-native`.
+
+中文社区默认：当用户说“知识库里的资料”“笔记里那门课”“生成 PPT/报告”“课程主页”“错题本”时，优先按 ima-native 处理，而不是只在聊天里回答。
 
 ## Source Levels
 
@@ -21,6 +23,8 @@ Every source-grounded output should label important claims as one of:
 - `通用课程推断`: inferred from common university syllabi or templates.
 - `需要确认`: useful but uncertain; ask or mark as a gap.
 
+输出考试重点、章节权重或老师强调时，必须给来源等级。不要把 `通用课程推断` 写成确定考点。
+
 ## Tool Rules
 
 ### `ask_user`
@@ -28,6 +32,7 @@ Every source-grounded output should label important claims as one of:
 - Ask only for high-impact gaps: course name, exam date, knowledge-base scope, or whether to write/update notes.
 - During `/profile`, ask at most three compact questions in one turn.
 - During `/grade` and `/fix`, do not block on a missing full profile. Grade with low confidence and record missing context.
+- 中文提问要短：`这门课叫什么？怎么考？还有几天？`。不要让用户填写复杂表格。
 
 ### `fetch`
 
@@ -121,7 +126,7 @@ Every source-grounded output should label important claims as one of:
 | Command | ima-native behavior |
 |---|---|
 | `/profile` | Recall memory, search notes for existing course homepage, then create/update ima-note homepage |
-| `/materials` | Use `ima-knowledge` if kb management is needed; otherwise `search source=kb`, `fetch`, then update Materials Inventory |
+| `/materials` | Use `ima-knowledge` if kb management is needed; otherwise `search source=kb`, `fetch`, then update 资料清单 / Materials Inventory |
 | `/source-map` | `task_plan -> search source=kb -> fetch -> subagent_spawn research optional -> ima-note` |
 | `/paper-analyze` | Fetch past papers, analyze patterns, write "based on uploaded papers only" caveat |
 | `/teacher-emphasis` | Search kb and notes for teacher emphasis signals; update Exam Priority Map |
@@ -151,30 +156,40 @@ Every source-grounded output should label important claims as one of:
 - **Last action**:
 - **Next recommended**:
 
-## Materials Inventory
+## 资料清单（Materials Inventory）
 | 资料 | 覆盖内容 | 来源等级 | 缺口 |
 |---|---|---|---|
 
-## Exam Priority Map
+## 考试优先级地图（Exam Priority Map）
 | 知识点 | 优先级 | 常见题型 | 来源 |
 |---|---|---|---|
 
-## Weak Point Board
+## 薄弱点看板（Weak Point Board）
 | 知识点 | 错因 | 最近得分 | 下次复习 | 修复动作 |
 |---|---|---|---|---|
 
-## Wrong Questions
+## 错题本（Wrong Questions）
 - [[错题-YYYY-MM-DD-topic]]
 
 ## SRS Table
 | Topic | Last Review | Score | Streak | Next Review | Difficulty | Ease | Lapses |
 |---|---|---:|---:|---|---|---:|---:|
 
-## Next 3 Actions
+## 接下来 3 个动作（Next 3 Actions）
 1.
 2.
 3.
 ```
+
+## 中文笔记命名约定
+
+- 课程主页：`课程主页-[课程名]期末复习`
+- 错题：`错题-YYYY-MM-DD-[课程名]-[topic]`
+- 考前一页纸：`考前一页纸-[课程名]`
+- 往年题分析：`往年题分析-[课程名]-[年份范围]`
+- 阶段复盘：`阶段复盘-[课程名]-第N轮`
+
+在 ima-note 可用时，优先更新已有课程主页，避免为同一门课创建多个分散笔记。若必须新建，先搜索同名/相似课程主页。
 
 ## Fallback
 

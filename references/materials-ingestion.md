@@ -1,12 +1,13 @@
 # Materials Ingestion
 
-Use when the user uploads or references course files: PDFs, PPTs, notes, homework, lab manuals, or past papers. For turning material analysis into a focused, feedback-driven, iterative review state, use `references/focus-feedback-iteration.md`.
+用户上传或提到课程资料时使用：PDF、PPT、课堂笔记、作业、实验指导书、题库、往年题、复习提纲、老师划重点截图等。要把资料分析转成“聚焦 - 反馈 - 迭代”的复习状态时，使用 `references/focus-feedback-iteration.md`。
 
 ## Before Processing
 
-1. Read `references/course-profiles.md` if no course profile exists yet.
-2. For PDF files, use the `pdf` skill to extract text and structure before summarizing.
-3. For images of notes or slides, read the image directly when available.
+1. 若尚无课程画像，先读 `references/course-profiles.md`。
+2. PDF 先用 `pdf` skill 或可用工具提取文本、页码、标题层级和公式结构，再总结。
+3. 笔记/课件图片可直接读图；看不清时只标注“未读清”，不要猜。
+4. 中文高校资料优先识别：PPT 页码、章节标题、老师手写批注、星标/红框、复习提纲、学习通/雨课堂章节、题库编号、往年题年份。
 
 ## PDF Skill Fallback
 
@@ -21,90 +22,105 @@ The `pdf` skill may not be available in every environment. Before relying on it,
 
 From each material, extract:
 
-- Chapters or lecture units and their order
-- Definitions, theorems, formulas, and standard templates
-- Likely question types and repeated exam patterns
-- Teacher emphasis, starred topics, or "will be on the exam" notes
-- Exam-scope weights, past-paper frequency, and teacher-emphasis strength for chapter ranking
-- Lab steps, instruments, safety notes, or report requirements when relevant
-- Gaps: missing past papers, missing answer keys, unclear assessment scope
+- 章节/讲次顺序，以及与教材、PPT、题库的对应关系。
+- 定义、定理条件、公式、标准解题模板、实验步骤或代码套路。
+- 可能题型、重复出现的考法、往年题/作业/题库中的高频模式。
+- 老师强调、星标、红框、复习提纲、课堂口头提示、答疑区高频问题。
+- 用于章节排序的三类证据：考试范围权重、往年题频率、老师强调强度。
+- 实验课要提取步骤、仪器、注意事项、安全点、数据处理和报告要求。
+- 编程/机考要提取语言范围、允许库、输入输出格式、OJ 题型和边界条件。
+- 缺口：缺少往年题、答案、评分标准、考试范围、不可读页、低置信章节。
+
+## 中文资料优先级
+
+同一主题有多个来源时，按下面顺序判断考试相关性：
+
+1. 老师明确划重点、复习课 PPT、考试说明、答疑群公告。
+2. 往年题、样卷、题库、课后重点题、实验考核要求。
+3. 本学期课件和作业。
+4. 教材章节和通用课程大纲。
+5. 网络通用知识，只能作为补充，不得当作本课程考点确认。
+
+若不同来源冲突，优先报告冲突，不要擅自合并成“确定范围”。
 
 ## Output Contract
+
+中文用户默认输出中文栏目。为兼容旧示例和测试，英文锚点如下：Materials Inventory, Exam-Relevant Topics, Missing Materials, Priority Map, Stage 1 Core Review Pack, Updated Course Snapshot Fields, Next Action。
 
 After `/materials`, produce this exact section structure so `/map`, `/plan`, and `/quiz` can reuse the result:
 
 ```markdown
-## Materials Inventory
-[Files/snippets ingested, what each contributes, unreadable items]
+## 资料清单（Materials Inventory）
+[已读取的文件/片段；每份资料贡献了什么；不可读或缺页内容]
 
-## Exam-Relevant Topics
-[High-yield topics, must-memorize items, likely question types, teacher emphasis]
+## 考试相关考点（Exam-Relevant Topics）
+[高收益考点、必背内容、可能题型、老师强调信号]
 
-## Missing Materials
-[Past papers, syllabus, answer keys, lab rubric, unreadable pages, low-confidence areas]
+## 缺失资料（Missing Materials）
+[往年题、考纲、答案、实验评分标准、不可读页、低置信范围]
 
-## Priority Map
-[Topic -> priority -> exam action -> confidence]
+## 优先级地图（Priority Map）
+[主题 -> P0/P1/P2 -> 考试动作 -> 证据来源 -> 置信度]
 
-## Stage 1 Core Review Pack
-[Use `references/staged-review-workflow.md`: must-memorize items with ★★★/★★/★, concept summary, question-type recognition and answer steps, and the mandatory Most Worth Studying Chapters table.]
+## 第一阶段核心复习包（Stage 1 Core Review Pack）
+[使用 `references/staged-review-workflow.md`：★★★/★★/★ 必背项、概念摘要、题型识别、答题步骤，以及必需的 Most Worth Studying Chapters 表]
 
-## Updated Course Snapshot Fields
-[Materials, Weak points if any, Next recommended]
+## 课程快照更新（Updated Course Snapshot Fields）
+[Materials、Weak points（如有）、Next recommended]
 
-## Next Action
-[Usually /map, /plan, or /quiz on the highest-priority gap]
+## 下一步（Next Action）
+[通常是 /map、/plan，或针对最高优先级缺口的 /quiz]
 
 ## 本轮闭环
-[重点: highest P0/P1 topic; 反馈: material evidence or missing signal; 下一轮: one concrete diagnostic, drill, upload, or repair action]
+[重点: 最高 P0/P1 主题；反馈: 资料证据或缺失信号；下一轮: 一个具体诊断、练习、补充上传或修复动作]
 ```
 
-Do not generate a full mock exam immediately after ingestion unless the user asks. Build the map first.
+除非用户明确要求，不要在资料摄取后立刻生成整套模拟卷。先生成地图或计划，再进入练习。
 
 For "most worth studying chapters", always combine exam-scope weight, past-paper frequency, and teacher-emphasis strength when those inputs exist. Use `P0` (must master), `P1` (focused breakthrough), and `P2` (understand / quick scan). If one input is missing, keep the table and mark that column as `unknown` rather than inventing values.
 
 ## Materials Missing or Too Thin
 
-When the user gives little or no material (for example, "help me review calculus"):
+当用户给的资料很少，例如“帮我复习高数”：
 
-1. Build a temporary low-confidence course profile from the course name and common curriculum.
-2. Start with `/diagnose` rather than a detailed plan.
-3. Mark `Materials` as `low-confidence / no syllabus yet` in the Current Course Snapshot.
-4. Ask for the syllabus, chapter list, teacher emphasis, or past paper after giving the first useful diagnostic step.
-5. Revise the map once real materials arrive; do not present generic chapter coverage as confirmed exam scope.
+1. 用课程名和常见教学大纲建立低置信临时画像。
+2. 先做 `/diagnose`，不要直接给很细的计划。
+3. 在 Current Course Snapshot 中把 `Materials` 标为 `low-confidence / no syllabus yet`。
+4. 给出第一个有用诊断步骤后，再请用户补充考纲、章节列表、老师重点或往年题。
+5. 真实资料到达后修订地图；不要把通用章节当作已确认考试范围。
 
 ## Incremental Ingestion
 
-When materials already exist in the Current Course Snapshot and the user provides additional files or content:
+Current Course Snapshot 已有资料，而用户又提供新文件或内容时：
 
-1. **Do not repeat** the existing material summary. Only report what is new or changed.
-2. **Merge** the new content into the existing knowledge inventory by topic, not by file order.
-3. **Flag** any conflicts between the new material and previously ingested content (e.g., a formula that differs between two sources).
-4. **Update** the gap list: remove gaps that the new material fills, and add any new gaps the new material reveals (e.g., a new chapter with no corresponding past-paper coverage).
-5. **Refresh** the `Materials` and `Next recommended` fields in the Current Course Snapshot.
-6. If the new material covers topics already in the inventory, note the overlap briefly and skip redundant summaries.
+1. **不要重复**旧资料总结，只报告新增或变化。
+2. 按主题合并到现有知识清单，不按文件顺序堆叠。
+3. 标出新旧资料冲突，例如公式、范围、考法、实验步骤不一致。
+4. 更新缺口列表：移除已补齐缺口，加入新暴露的缺口。
+5. 刷新 Current Course Snapshot 的 `Materials` 和 `Next recommended` 字段。
+6. 新资料覆盖旧主题时，简短说明重叠，跳过冗余总结。
 
 ## Multi-File Handling
 
 When multiple files arrive:
 
-- Merge by chapter/topic, not by file order
-- Flag conflicts between sources
-- Prefer past papers and teacher slides over generic textbook ordering for exam weighting
-- Note duplicate coverage and skip redundant summaries
+- 按章节/主题合并，不按文件顺序堆叠。
+- 标出来源冲突。
+- 计算考试权重时，优先使用往年题、老师课件和复习课材料，而不是教材默认顺序。
+- 说明重复覆盖并跳过冗余总结。
 
 ## Ingestion by Environment
 
 The ingestion step depends on host capabilities. Use `references/environment-adaptation.md` first when the host is unknown or when file access, retrieval, OCR, or persistence matters.
 
-- **Agent shell**: read files directly from disk, run the `pdf` skill when available, OCR images with available image/PDF tooling, and build a chapter index from filenames and headings. Typical hosts include Codex, Claude Code, OpenClaw, Hermes, WorkBuddy, and Qoder Work when file/shell tools exist.
-- **RAG notebook**: the model already has document context or retrieval. Typical hosts include NotebookLM and document-chat notebooks. Skip local file-reading. Treat retrieved or pasted snippets as the unit of work and cite sources when the host exposes citations. If retrieval is thin, ask for the section title, page range, or pasted excerpt.
-- **ima-native**: use `references/ima-adaptation.md` first. Prefer `search source=kb` to locate materials and `fetch` to read concrete files, media, URLs, or notes. If the user asks to organize a knowledge base or locate kb_id/files/tags, call `use_skill name=ima-knowledge`. Update the course homepage via `use_skill name=ima-note` or emit the Course Home Markdown fallback.
-- **Notes app**: the user works in Obsidian or a Markdown/PKM tool. Prefer Markdown-native ingestion: headings, tags, backlinks, pasted note blocks, and excerpt-by-excerpt summaries. Output copyable blocks with tags such as `#课程/高数`, `#错题`, and backlinks such as `[[极限]]` when useful. Do not assume shell execution or direct vault access unless confirmed.
-- **Plain chat**: there are no reliable files. Ask the student to:
-  1. Paste the relevant chapter text directly (limit to one topic at a time to keep context).
-  2. Send a photo of handwritten notes or a slide screenshot — the model can read the image inline.
-  3. Send a PDF page-by-page as images, not as the PDF itself, if the chat client cannot accept PDFs.
-  4. For very long materials, work in passes: first the table of contents + chapter titles, then the chapters in priority order.
+- **Agent shell**：直接读磁盘文件；可用时运行 `pdf` skill；用可用图像/PDF 工具 OCR 图片；从文件名和标题建立章节索引。典型环境包括具备文件/shell 工具的 Codex、Claude Code、OpenClaw、Hermes、WorkBuddy、Qoder Work。
+- **RAG notebook**：模型已有文档上下文或检索。典型环境包括 NotebookLM 和文档问答笔记本。跳过本地读文件；以检索/粘贴片段为单位，宿主支持引用时给出处。检索很薄时，要求用户提供章节标题、页码范围或粘贴片段。
+- **ima-native**：先用 `references/ima-adaptation.md`。优先用 `search source=kb` 找资料，再用 `fetch` 读具体文件、媒体、URL 或笔记。用户要整理知识库或定位 kb_id/files/tags 时，调用 `use_skill name=ima-knowledge`。通过 `use_skill name=ima-note` 更新课程主页，或输出 Course Home Markdown fallback。
+- **Notes app**：用户在 Obsidian 或 Markdown/PKM 工具中。优先 Markdown-native 摄取：标题、标签、反链、粘贴笔记块、逐段摘要。需要时输出可复制块，使用 `#课程/高数`、`#错题`、`[[极限]]` 等标签/反链。未确认前不要假设可执行 shell 或直接访问 vault。
+- **Plain chat**：没有可靠文件能力。请学生：
+  1. 直接粘贴相关章节文本，一次只处理一个主题。
+  2. 发送手写笔记照片或课件截图。
+  3. 若客户端不能接收 PDF，把 PDF 按页转成图片发送。
+  4. 资料很长时分轮处理：先目录和章节标题，再按优先级逐章处理。
 
-After ingestion in a notes app or plain chat, always echo back a compact material summary so the student can confirm "yes, this is what I sent" before any review work begins.
+在 notes app 或 plain chat 摄取后，必须先回显紧凑资料摘要，让学生确认“是我发的这些内容”，再开始复习任务。
