@@ -24,9 +24,9 @@ full probe. Probe only when the current task needs the capability.
 
 | Profile | Required capability | Best path |
 |---|---|---|
-| `scripted-agent` | `file-read` + `file-write` + `shell` | Use local files, run deterministic scripts for snapshots/SRS/flashcards, and validate generated artifacts. |
+| `scripted-agent` | `file-read` + `file-write` + `shell` | Use local files, run deterministic scripts for snapshots/recommendations/search queries/SRS/flashcards, and validate generated artifacts. |
 | `file-agent` | `file-read` + `file-write`, no shell | Read materials and write Markdown artifacts; do not claim scripts ran. |
-| `retrieval-agent` | `kb-retrieval` or `citations` | Build source-grounded maps, cite materials, label evidence, and keep unsupported claims as assumptions. |
+| `retrieval-agent` | `kb-retrieval`, `kb-search`, `note-search`, `rag-search`, `web-search`, or `citations` | Build source-grounded maps, cite materials, label evidence, and keep unsupported claims as assumptions. |
 | `memory-agent` | `memory` | Store stable course facts, exam dates, user preferences, and durable summaries only. |
 | `ide-agent` | `ide` | Emphasize programming-course review, runnable examples when shell exists, diagnostics, code traces, and project-linked exercises. |
 | `visual-agent` | `rendering` | Prefer Mermaid, LaTeX, plots, tables, or HTML visuals when the host renders them. |
@@ -44,12 +44,19 @@ Profiles can combine. Example: an IDE with file-write and shell should use both
   when possible.
 - `file-write`: save course snapshots, dashboards, mock exams, wrong-question
   notes, flashcard source Markdown, and generated demos when useful.
-- `shell`: prefer `scripts/snapshot.py`, `scripts/srs.py`, and
+- `shell`: prefer `scripts/snapshot.py`, `scripts/recommend_next.py`,
+  `scripts/build_search_queries.py`, `scripts/srs.py`, and
   `scripts/export_flashcards.py`; run tests for generated scripts or code demos.
+- `subagents`: optional only. Use separate tutor/assessor/planner passes when
+  workload and tools justify them; keep the single-agent path first-class and
+  never change the shared teaching contract by agent identity.
 - `sandbox`: ask for approval only when the operation requires it; provide an
   inline fallback if approval is denied.
 - `search`: use for official course pages, public syllabi, or platform docs; do
   not use web search to invent exam emphasis.
+- `kb-search`, `note-search`, `workspace-search`, `rag-search`, `web-search`:
+  use `references/material-retrieval.md` when course materials are missing or
+  thin; search user-owned sources before public web.
 - `kb-retrieval`: use before asking the student to paste materials.
 - `citations`: attach source anchors to material-grounded claims.
 - `memory`: write only stable facts; do not store transient mistakes without a

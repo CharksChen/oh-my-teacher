@@ -30,6 +30,11 @@ AI plays a **curious, naive, yet logically sharp undergraduate freshman** (å¤§ä¸
 6. **SRS update**: If a concrete topic was practiced and the environment supports state, update SRS with a score from 1-5.
 7. **Output**: A compact evaluation with one specific improvement tip and the repair card.
 
+Use `references/adaptive-state.md` when prior evidence exists. As the student's
+explanations improve, fade from probing with examples (`guide`) to asking for an
+independent, exam-ready explanation (`test`). If the explanation reveals a
+prerequisite gap, return to `teach` for that prerequisite only.
+
 ## Grade Output Contract
 
 ```markdown

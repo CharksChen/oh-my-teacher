@@ -172,6 +172,9 @@ Use the strongest available evidence, in this order:
 4. Wrong-note analytics from `references/wrong-note.md`.
 5. Recent quiz/mock/oral/grade results.
 6. User-provided teacher emphasis, past papers, and materials.
+7. Lightweight recommendation state from `references/adaptive-state.md`,
+   including mastery band, scaffold level, prerequisite blocks, and ranked next
+   action.
 
 When evidence is missing, mark it as unknown and ask for the smallest useful
 input after the digest, not before it.

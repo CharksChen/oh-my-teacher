@@ -80,6 +80,9 @@ Every source-grounded output should label important claims as one of:
 
 - This is the central ima learning tool.
 - `/materials` defaults to `search source=kb`.
+- If the user gives only a course name or no external material, follow
+  `references/material-retrieval.md`: search `source=kb`, then `source=note`,
+  then `source=web` only when user-owned sources are thin.
 - `/wrong-note` and `/review-due` default to `search source=note`.
 - `/teacher-emphasis` searches both `source=kb` and `source=note`.
 - Use `source=web` only for external facts, and label them as not course-material evidence.

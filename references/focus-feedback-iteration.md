@@ -25,6 +25,7 @@ For multi-step review outputs, end with a compact footer:
 - 重点: [P0/P1 topic or current weak point]
 - 反馈: [what evidence we used or still need]
 - 下一轮: [one concrete action: answer Q1, upload paper, run drill, repair topic, review due item]
+- SRS: [updated / scheduled / not applicable / unavailable]
 ```
 
 If no student answer exists yet, the feedback line should say what evidence is
@@ -38,6 +39,8 @@ missing, for example: "需要你先完成3道诊断题才能判断掌握度".
 - Prefer repeated mistakes over topics the student merely says are difficult.
 - Prefer high-yield standard templates in cram mode.
 - Prefer prerequisites when a later topic repeatedly fails because of them.
+- When several topics compete, use `references/adaptive-state.md` and prefer the
+  highest deterministic recommendation score.
 
 ## Feedback Rules
 
@@ -71,3 +74,5 @@ Available iteration moves are: repair, repeat, interleave, escalate, de-prioriti
 - Stage 2 outputs end by turning graded mistakes into weak-point repair.
 - Plans convert P0/P1/P2 priorities into dated loops.
 - Summaries record what changed and the next iteration target.
+- Dashboards, plans, and digests reuse `references/adaptive-state.md` instead of
+  inventing a new ranking rule.

@@ -63,6 +63,11 @@ ALLOWED_CAPABILITY_TAGS = {
     "shell",
     "sandbox",
     "search",
+    "kb-search",
+    "note-search",
+    "workspace-search",
+    "rag-search",
+    "web-search",
     "kb-retrieval",
     "citations",
     "memory",
@@ -303,13 +308,14 @@ def validate(root: Path) -> list[str]:
 
     for path, label in [(skill_path, "SKILL.md"), (index_path, "references/INDEX.md"), (openai_agent, "agents/openai.yaml")]:
         check(path.exists(), errors, f"Missing {label}.")
-    for name in ["export_flashcards.py", "snapshot.py", "srs.py", "validate_skill.py", "package_check.py", "course_templates.py", "build_runtime_prompt.py"]:
+    for name in ["export_flashcards.py", "snapshot.py", "recommend_next.py", "build_search_queries.py", "srs.py", "validate_skill.py", "package_check.py", "course_templates.py", "build_runtime_prompt.py"]:
         check((scripts_dir / name).exists(), errors, f"Missing required script: scripts/{name}.")
     for name in [
         "INDEX.md",
         "course-profiles.md",
         "environment-adaptation.md",
         "materials-ingestion.md",
+        "material-retrieval.md",
         "subject-adaptation.md",
         "interaction-modes.md",
         "socratic-mode.md",
@@ -322,6 +328,7 @@ def validate(root: Path) -> list[str]:
         "staged-review-workflow.md",
         "focus-feedback-iteration.md",
         "opt-in-reminders.md",
+        "adaptive-state.md",
     ]:
         check((refs_dir / name).exists(), errors, f"Missing required reference: references/{name}.")
     if errors:

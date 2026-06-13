@@ -127,6 +127,9 @@
 > ## Score
 > 8/10 - 证明框架完整，N 的取法不够严谨
 >
+> ## Rubric Evidence
+> generated fallback；置信度：medium。未提供老师评分细则，因此按数学分析证明题通用扣分标准批改。
+>
 > ## Checks Performed
 > ε-N 定义结构、N 的存在性、不等式推导、结论
 >
@@ -141,6 +144,9 @@
 >
 > ## Correct Version
 > 任取 ε > 0，取 $N = \left\lceil \frac{1}{\varepsilon} \right\rceil$，则当 $n > N$ 时...
+>
+> ## Self-Reflection
+> 请你用 1-3 句话补一句：你原来错在 N 的哪个条件，下次看到 ε-N 题时先检查什么。
 >
 > ## Repair Drill
 > 用定义证明 $\lim_{n \to \infty} \frac{n}{n+1} = 1$，注意 N 的取法。

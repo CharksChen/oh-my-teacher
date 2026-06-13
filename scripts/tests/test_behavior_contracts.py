@@ -30,11 +30,13 @@ def read(path: Path) -> str:
 # The 8 sections a /grade, /quiz, or /mock grading response must return.
 GRADE_SECTIONS = [
     "## Score",
+    "## Rubric Evidence",
     "## Checks Performed",
     "## What Is Correct",
     "## Lost Points",
     "## Exact Mistake",
     "## Correct Version",
+    "## Self-Reflection",
     "## Repair Drill",
     "## SRS Update",
 ]
@@ -63,6 +65,20 @@ class StrictGradingContract(unittest.TestCase):
         text = read(REFS / "question-types.md")
         self.assertIn("Double-Pass", text)
         self.assertIn("self-correction", text.lower())
+
+    def test_rubric_evidence_and_reflection_present(self):
+        text = read(REFS / "question-types.md")
+        for phrase in [
+            "Rubric Evidence",
+            "official rubric",
+            "teacher sample",
+            "past-paper inferred",
+            "generated fallback",
+            "grading confidence",
+            "Self-Reflection",
+            "自我反思",
+        ]:
+            self.assertIn(phrase, text)
 
 
 class DiagnoseContract(unittest.TestCase):
@@ -146,6 +162,16 @@ class CapabilityProbeContract(unittest.TestCase):
         text = read(REFS / "environment-adaptation.md")
         self.assertIn("Detection Order", text)
 
+    def test_material_search_capabilities_documented(self):
+        text = read(REFS / "environment-adaptation.md")
+        for phrase in ["kb-search", "note-search", "workspace-search", "rag-search", "web-search"]:
+            self.assertIn(phrase, text)
+        contract = read(REFS / "agent-adapter-contract.md")
+        optimization = read(REFS / "agent-optimization.md")
+        for phrase in ["kb-search", "note-search", "workspace-search", "rag-search", "web-search"]:
+            self.assertIn(phrase, contract)
+            self.assertIn(phrase, optimization)
+
 
 class RoutingMapContract(unittest.TestCase):
     """The SKILL.md quick routing map must not drift from INDEX.md commands."""
@@ -198,6 +224,48 @@ class StagedReviewWorkflowContract(unittest.TestCase):
             self.assertIn("P0", text)
 
 
+class MaterialRetrievalContract(unittest.TestCase):
+    def test_material_retrieval_contract_exists(self):
+        text = read(REFS / "material-retrieval.md")
+        for phrase in [
+            "Source Levels",
+            "Retrieval Order",
+            "Query Generation",
+            "Evidence Table",
+            "No-Source Fallback",
+            "官方公开来源",
+            "通用课程推断",
+            "Do not promote",
+            "scripts/build_search_queries.py",
+        ]:
+            self.assertIn(phrase, text)
+
+    def test_query_builder_script_is_referenced(self):
+        for path in [
+            REFS / "material-retrieval.md",
+            REFS / "environment-adaptation.md",
+            REFS / "agent-adapter-contract.md",
+            REFS / "agent-optimization.md",
+        ]:
+            self.assertIn("scripts/build_search_queries.py", read(path), f"{path.name} missing query builder reference")
+
+    def test_thin_materials_flow_references_retrieval(self):
+        for path in [
+            ROOT / "SKILL.md",
+            REFS / "INDEX.md",
+            REFS / "materials-ingestion.md",
+            REFS / "environment-adaptation.md",
+            REFS / "ima-adaptation.md",
+            REFS / "chinese-routing.md",
+        ]:
+            self.assertIn("material-retrieval.md", read(path), f"{path.name} missing material retrieval routing")
+
+    def test_materials_warn_against_fake_course_confirmation(self):
+        text = read(REFS / "materials-ingestion.md")
+        self.assertIn("不要把通用章节当作已确认考试范围", text)
+        self.assertIn("检索证据表", text)
+
+
 class FocusFeedbackIterationContract(unittest.TestCase):
     def test_focus_feedback_iteration_contract_exists(self):
         text = read(REFS / "focus-feedback-iteration.md")
@@ -228,6 +296,46 @@ class FocusFeedbackIterationContract(unittest.TestCase):
         self.assertIn("重点:", text)
         self.assertIn("反馈:", text)
         self.assertIn("下一轮:", text)
+
+
+class AdaptiveStateContract(unittest.TestCase):
+    def test_adaptive_state_contract_exists(self):
+        text = read(REFS / "adaptive-state.md")
+        for phrase in [
+            "teach -> guide -> prompt -> test",
+            "mastery_band",
+            "scaffold_level",
+            "prerequisites",
+            "Deterministic Recommendation Score",
+            "not a psychometric model",
+            "scripts/recommend_next.py",
+        ]:
+            self.assertIn(phrase, text)
+
+    def test_core_references_link_adaptive_state(self):
+        for path in [
+            ROOT / "SKILL.md",
+            REFS / "INDEX.md",
+            REFS / "interaction-modes.md",
+            REFS / "review-plans.md",
+            REFS / "course-profiles.md",
+            REFS / "focus-feedback-iteration.md",
+        ]:
+            self.assertIn("adaptive-state.md", read(path), f"{path.name} does not reference adaptive-state.md")
+
+    def test_agent_contracts_reference_recommendation_script(self):
+        for path in [
+            REFS / "agent-adapter-contract.md",
+            REFS / "agent-optimization.md",
+            REFS / "environment-adaptation.md",
+        ]:
+            self.assertIn("scripts/recommend_next.py", read(path), f"{path.name} missing recommendation script")
+
+    def test_no_agent_special_treatment_contract_remains(self):
+        contract = read(REFS / "agent-adapter-contract.md")
+        optimization = read(REFS / "agent-optimization.md")
+        self.assertIn("No agent gets", contract)
+        self.assertIn("No platform privilege", optimization)
 
 
 class OptInReminderContract(unittest.TestCase):

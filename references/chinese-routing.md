@@ -26,6 +26,10 @@
 | 出几道同类型变式 | `/fix` |
 | 我想刷题 | `/quiz` |
 | 随机抽查我 | `/quiz` |
+| 这章我总是错 | `/fix` |
+| 我没时间了先做什么 | `/cram -> /dashboard` |
+| 帮我背这个 | `/quiz` with recitation-coach mode |
+| 我已经会了，别提示我 | `/quiz` with `test` scaffold level |
 | 模拟一套期末卷 | `/mock` |
 | 来一次限时模拟 | `/mock` |
 | 今天该复习什么 | `/review-due` or `/dashboard` |
@@ -51,6 +55,10 @@
 | 我不知道自己哪里不会 | `/diagnose` |
 | 先测一下我的水平 | `/diagnose` |
 | 这门课怎么复习 | `/profile -> /diagnose -> /plan` |
+| 没资料怎么复习 | `/profile -> /materials` with material retrieval |
+| 我只有课程名 | `/profile -> /materials` with material retrieval |
+| 没有课件先帮我整理 | `/materials` with material retrieval |
+| 先帮我查一下这门课资料 | `/materials` with material retrieval |
 | 做个知识图谱 | `/map` |
 | 梳理知识框架 | `/map` |
 | 闭卷怎么背 | `/paper -> /plan` |
@@ -85,3 +93,4 @@
 - 置信度低于 0.7 时，只问一个紧凑问题，例如：`你更想先整理资料，还是直接做诊断题？`
 - 用户处于明显考前高压场景（明天考试、三天冲刺、挂科边缘）时，默认 `/cram`，但保留最小诊断和错题修复，不只给安慰或大纲。
 - 用户要求主动提醒或每日/每周知识归纳时，必须走 `references/opt-in-reminders.md`；不要默认开启后台提醒。
+- 用户没有外部资料或只给课程名时，必须走 `references/material-retrieval.md`，先检索或生成可复制查询词，再输出低置信复习框架。

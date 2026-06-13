@@ -1,6 +1,6 @@
 # Materials Ingestion
 
-用户上传或提到课程资料时使用：PDF、PPT、课堂笔记、作业、实验指导书、题库、往年题、复习提纲、老师划重点截图等。要把资料分析转成“聚焦 - 反馈 - 迭代”的复习状态时，使用 `references/focus-feedback-iteration.md`。
+用户上传或提到课程资料时使用：PDF、PPT、课堂笔记、作业、实验指导书、题库、往年题、复习提纲、老师划重点截图等。要把资料分析转成“聚焦 - 反馈 - 迭代”的复习状态时，使用 `references/focus-feedback-iteration.md`。当用户没有提供外部资料或只给很少线索时，先读 `references/material-retrieval.md`。
 
 ## Before Processing
 
@@ -83,11 +83,14 @@ For "most worth studying chapters", always combine exam-scope weight, past-paper
 
 当用户给的资料很少，例如“帮我复习高数”：
 
-1. 用课程名和常见教学大纲建立低置信临时画像。
-2. 先做 `/diagnose`，不要直接给很细的计划。
-3. 在 Current Course Snapshot 中把 `Materials` 标为 `low-confidence / no syllabus yet`。
-4. 给出第一个有用诊断步骤后，再请用户补充考纲、章节列表、老师重点或往年题。
-5. 真实资料到达后修订地图；不要把通用章节当作已确认考试范围。
+1. 先读 `references/material-retrieval.md`，执行低置信资料检索流程。
+2. 标准化课程名、学科族、可能考试形式和常见同义词。
+3. 检测环境是否支持 `kb-search`、`note-search`、`workspace-search`、`rag-search` 或 `web-search`。
+4. 优先检索用户自己的知识库、笔记、RAG 上下文和本地文件；再检索官方公开来源；最后才使用通用课程大纲。
+5. 输出 `检索证据表`，标注 `课程资料确认 / 知识库检索 / 笔记历史 / 官方公开来源 / 通用课程推断 / 需要确认`。
+6. 若检索仍为空，用课程名和常见教学大纲建立低置信临时画像，并在 Current Course Snapshot 中把 `Materials` 标为 `no external material; low-confidence scaffold`。
+7. 先给一个有用诊断步骤或 P0 候选练习，再只请求一个最高价值补充材料：考纲、章节列表、老师重点、往年题或 PPT 目录。
+8. 真实资料到达后修订地图；不要把通用章节当作已确认考试范围。
 
 ## Incremental Ingestion
 
@@ -124,3 +127,5 @@ The ingestion step depends on host capabilities. Use `references/environment-ada
   4. 资料很长时分轮处理：先目录和章节标题，再按优先级逐章处理。
 
 在 notes app 或 plain chat 摄取后，必须先回显紧凑资料摘要，让学生确认“是我发的这些内容”，再开始复习任务。
+
+当 plain chat 没有任何资料时，不要声称完成检索。输出 `references/material-retrieval.md` 的可复制查询词、低置信课程框架和一个诊断题。

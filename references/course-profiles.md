@@ -119,6 +119,12 @@ In agent shells, prefer `scripts/snapshot.py` for deterministic save/load/list/s
 
 The script also maintains `.oh-my-teacher/state.json` in agent shells. Treat the Markdown snapshot as the human-facing format and `state.json` as the machine-readable state for scripts and future automation.
 
+Lightweight adaptive topic state may live under `adaptive.topics` in
+`.oh-my-teacher/state.json`; see `references/adaptive-state.md`. Keep these
+details out of the Markdown snapshot unless they improve a student-facing plan
+or dashboard. Markdown remains the human-facing source; JSON is an optional
+sidecar, not a database requirement.
+
 When persisting the Current Course Snapshot to `.oh-my-teacher/snapshot.md` (agent shell) or as a copyable block (plain chat), use the exact Markdown format below. The LLM must parse and write this structure byte-for-byte — do not add extra headings, YAML front matter, or narrative text outside the fenced block.
 
 ```markdown

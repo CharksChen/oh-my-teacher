@@ -1,6 +1,6 @@
 # Review Plans and Study Maps
 
-用于 `/plan`、`/map`、`/cram`、`/last-page`、`/dashboard`、多课程排期、考前一页纸和进度热力图。学习策略选择见 `references/learning-strategies.md`；复习闭环见 `references/focus-feedback-iteration.md`；显式每日/每周提醒或知识归纳见 `references/opt-in-reminders.md`。
+用于 `/plan`、`/map`、`/cram`、`/last-page`、`/dashboard`、多课程排期、考前一页纸和进度热力图。学习策略选择见 `references/learning-strategies.md`；复习闭环见 `references/focus-feedback-iteration.md`；下一步排序见 `references/adaptive-state.md`；显式每日/每周提醒或知识归纳见 `references/opt-in-reminders.md`。
 
 ## Study Map
 
@@ -17,6 +17,8 @@ Produce:
 - 当前复习闭环：重点、反馈证据、下一轮目标。
 
 如果有往年题，从重复概念、题型、分值和出现年份估算权重。避免说“必考”，改说“高频/证据强/需要确认”。
+
+当多个主题都值得复习时，按 `references/adaptive-state.md` 的确定性推荐分数排序，综合章节优先级、考试范围、真题频率、老师强调、薄弱证据、SRS 到期和前置知识阻塞。不要只按学生主观感受或最近对话顺序排计划。
 
 中文输出建议结构：
 
@@ -180,3 +182,5 @@ For `/dashboard`, generate a Markdown dashboard instead of relying on the local 
 ```
 
 In ima-native environments, gather data from `memory_recall`, `search source=note`, the course homepage, SRS table, weak-point board, and recent wrong notes. Update the dashboard through `ima-note` when available.
+
+仪表盘必须包含 `references/adaptive-state.md` 定义的“下一步推荐”表，并只把排名第一的动作设为“今日必须完成”。其余动作进入候选队列，避免同时开启过多任务。

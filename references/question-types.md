@@ -123,15 +123,52 @@ Strict grading is only useful when it is *accurate*. A single pass of LLM gradin
 
 This prevents the grader from penalising non-standard but correct reasoning while still catching genuine errors. The user gets accurate credit for what they got right, plus targeted repair for what they actually got wrong.
 
+### Rubric Evidence And Confidence
+
+Before grading, label the strongest available rubric source:
+
+| Rubric source | Meaning |
+|---|---|
+| `official rubric` | official marking scheme or answer key |
+| `teacher sample` | teacher-provided sample, class emphasis, or model answer |
+| `past-paper inferred` | scoring points inferred from past papers or repeated patterns |
+| `generated fallback` | general course knowledge and question-type conventions |
+
+For every deduction, point to visible evidence in the student's answer: a
+specific sentence, omitted condition, calculation step, code behavior, or
+missing material link. Do not deduct points from an imagined rubric.
+
+State grading confidence as `high`, `medium`, or `low`. Use `low` when no course
+source or reliable rubric exists, and explicitly say that `generated fallback`
+is not equivalent to the teacher's standard.
+
+### Structured Self-Reflection
+
+After `/grade`, `/quiz`, or `/mock`, ask for one compact reflection before or as
+the first step of `/fix`, unless the user is in a critical cram window:
+
+```markdown
+## 自我反思（Self-Reflection）
+- 我原来错在: [概念 / 条件 / 方法选择 / 步骤 / 检查]
+- 下次识别信号: [看到什么关键词、条件或题型特征时要换方法]
+```
+
+If the user does not answer, continue with the smallest repair drill rather than
+blocking the workflow. In cram mode, infer a one-line reflection from the
+visible mistake and move directly to repair.
+
 ### Output
 
-中文用户默认使用中文标题，并在括号里保留英文锚点。以下英文标题也必须继续保留在本文件中以维持行为契约：## Score, ## Checks Performed, ## What Is Correct, ## Lost Points, ## Exact Mistake, ## Correct Version, ## Repair Drill, ## SRS Update。
+中文用户默认使用中文标题，并在括号里保留英文锚点。以下英文标题也必须继续保留在本文件中以维持行为契约：## Score, ## Rubric Evidence, ## Checks Performed, ## What Is Correct, ## Lost Points, ## Exact Mistake, ## Correct Version, ## Self-Reflection, ## Repair Drill, ## SRS Update。
 
 Return this structure for every `/grade`, `/quiz`, or `/mock` grading response:
 
 ```markdown
 ## 得分（Score）
 [earned]/[max] - [严格的一句话判定：能否按真实考试拿到这些分]
+
+## 评分依据（Rubric Evidence）
+[official rubric / teacher sample / past-paper inferred / generated fallback]；置信度：[high / medium / low]
 
 ## 检查项（Checks Performed）
 [本题按哪些失分类型检查：概念/条件/步骤/计算/边界/表达/材料引用等]
@@ -147,6 +184,9 @@ Return this structure for every `/grade`, `/quiz`, or `/mock` grading response:
 
 ## 标准/改正版本（Correct Version）
 [正确答案或更稳妥的考试写法]
+
+## 自我反思（Self-Reflection）
+[请学生用 1-3 句话说清原错因和下次识别信号；冲刺模式可由 AI 先压缩成一句]
 
 ## 立即修复练习（Repair Drill）
 [一个马上做的变式题或任务]

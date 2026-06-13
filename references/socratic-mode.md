@@ -20,6 +20,21 @@ Help the student discover the key idea by answering targeted questions. Manage d
 6. **Student summary**: Ask the student to summarize the discovered idea in one compact answer.
 7. **Teacher close**: Give a concise correction, score understanding from 1-5, name the smallest remaining gap, and suggest the next drill.
 
+## Scaffolding Fading
+
+Read `references/adaptive-state.md` when prior evidence exists. Use the shared
+`teach -> guide -> prompt -> test` levels instead of repeating the full hint
+ladder every round.
+
+- At `teach`, a worked micro-example is allowed before the first question.
+- At `guide`, use the normal hint ladder.
+- At `prompt`, give only a method/condition cue.
+- At `test`, ask an exam-style question without a hint unless the student gets
+  stuck.
+
+Move toward `test` after a correct student summary. Move back one level after a
+miss or prerequisite gap.
+
 ## Question Types
 
 - Definition: "这个概念成立需要哪些条件？"

@@ -155,6 +155,35 @@ class SnapshotTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("not found", result.stderr)
 
+    def test_state_merge_preserves_snapshot_and_adds_adaptive_state(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            save = subprocess.run(
+                [sys.executable, self._script(), "--workspace", tmp, "save"],
+                input=SNAPSHOT,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(save.returncode, 0, save.stderr)
+
+            patch = '{"adaptive":{"topics":{"graphs":{"priority":"P0","mastery_band":"weak"}}}}'
+            merge = subprocess.run(
+                [sys.executable, self._script(), "--workspace", tmp, "state-merge"],
+                input=patch,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(merge.returncode, 0, merge.stderr)
+
+            load = subprocess.run(
+                [sys.executable, self._script(), "--workspace", tmp, "load", "--json"],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(load.returncode, 0, load.stderr)
+            self.assertIn('"course": "Data Structures / Computer Science"', load.stdout)
+            self.assertIn('"graphs"', load.stdout)
+            self.assertIn('"mastery_band": "weak"', load.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

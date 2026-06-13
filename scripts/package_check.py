@@ -20,6 +20,7 @@ import sys
 from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+TEXT_CHECK_EXCLUDE = {"建议.md"}
 
 
 def clean_pycache(root: Path) -> None:
@@ -34,6 +35,8 @@ def check_utf8_and_long_lines(root: Path) -> int:
     suffixes = {".py", ".md", ".yml", ".yaml", ".json"}
     for path in sorted(root.rglob("*")):
         if not path.is_file() or path.suffix.lower() not in suffixes:
+            continue
+        if path.name in TEXT_CHECK_EXCLUDE:
             continue
         if any(part in {".git", "__pycache__"} for part in path.parts):
             continue

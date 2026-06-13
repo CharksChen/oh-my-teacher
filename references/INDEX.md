@@ -9,17 +9,19 @@
 | 1 | `course-profiles.md` | 课程画像、Current Course Snapshot、多课程切换和持久化格式 | `/profile`, `/materials`, `/diagnose`, `/plan`, `/map`, `/mock`, `/grade`, `/fix`, `/quiz`, `/oral`, `/group-quiz`, `/summary`, `/resume`, course switch |
 | 2 | `environment-adaptation.md` | 判断宿主能力并选择降级方案 | 涉及文件、检索、shell/scripts、持久化、引用、图示、代码演示、导出或未知环境 |
 | 3 | `materials-ingestion.md` | 摄取 PDF/PPT/笔记/往年题，提取知识清单、重点和缺口 | `/materials` 或用户上传课程资料 |
-| 4 | `subject-adaptation.md` | 按学科调整严谨度、符号、例子、题型和图示 | 已建立课程画像后的任何复习任务 |
-| 5 | `interaction-modes.md` | 选择苏格拉底、费曼、阅卷人、冲刺等教学模式 | 生成题目、讲解、反馈或切换模式前 |
-| 6 | `learning-strategies.md` | 主动回忆、间隔复习、交错练习等学习策略 | `/plan`, `/quiz`, `/fix`, `/socratic`, `/feynman`, `/flashcards` 或选择学习方法时 |
-| 7 | `ima-adaptation.md` | ima-native 工具、记忆、笔记、知识库、报告和 PPT 路由 | 环境是 ima，用户提到 ima/知识库/笔记，或工具含 ask_user/fetch/search/memory/use_skill |
-| 8 | `chinese-routing.md` | 中文自然语言触发词到命令/工作流的映射 | 中文请求没有斜杠命令，或暗示中文知识库/笔记学习流 |
-| 9 | `agent-adapter-contract.md` | 多 Agent 适配契约和能力标签 | 打包或在命名 Agent 运行 skill |
-| 10 | `agent-optimization.md` | 按 Agent 能力选择最佳执行路径 | 运行、打包、验证或调试 Agent 适配 |
-| 11 | `agent-inventory.md` | 各 Agent 能力清单和不确定项 | 添加、验证或调试 Agent 适配 |
-| 12 | `staged-review-workflow.md` | 两阶段“资料到练习”流程和 Stage 1 核心复习包 | 用户要阶段式复习、核心材料或最值得学的章节 |
-| 13 | `focus-feedback-iteration.md` | 聚焦 - 反馈 - 迭代闭环 | 多步骤复习、计划、练习、批改、修复、总结或阶段工作流 |
-| 14 | `opt-in-reminders.md` | 明确 opt-in 的提醒和每日/每周知识归纳契约 | 用户明确要求启用、修改、停止或生成提醒/归纳卷 |
+| 4 | `material-retrieval.md` | 无外部资料或信息很少时的资料检索、查询词和来源等级 | 用户只给课程名、资料缺失、检索课程资料或 `/materials` 资料很薄 |
+| 5 | `subject-adaptation.md` | 按学科调整严谨度、符号、例子、题型和图示 | 已建立课程画像后的任何复习任务 |
+| 6 | `interaction-modes.md` | 选择苏格拉底、费曼、阅卷人、冲刺等教学模式 | 生成题目、讲解、反馈或切换模式前 |
+| 7 | `learning-strategies.md` | 主动回忆、间隔复习、交错练习等学习策略 | `/plan`, `/quiz`, `/fix`, `/socratic`, `/feynman`, `/flashcards` 或选择学习方法时 |
+| 8 | `ima-adaptation.md` | ima-native 工具、记忆、笔记、知识库、报告和 PPT 路由 | 环境是 ima，用户提到 ima/知识库/笔记，或工具含 ask_user/fetch/search/memory/use_skill |
+| 9 | `chinese-routing.md` | 中文自然语言触发词到命令/工作流的映射 | 中文请求没有斜杠命令，或暗示中文知识库/笔记学习流 |
+| 10 | `agent-adapter-contract.md` | 多 Agent 适配契约和能力标签 | 打包或在命名 Agent 运行 skill |
+| 11 | `agent-optimization.md` | 按 Agent 能力选择最佳执行路径 | 运行、打包、验证或调试 Agent 适配 |
+| 12 | `agent-inventory.md` | 各 Agent 能力清单和不确定项 | 添加、验证或调试 Agent 适配 |
+| 13 | `staged-review-workflow.md` | 两阶段“资料到练习”流程和 Stage 1 核心复习包 | 用户要阶段式复习、核心材料或最值得学的章节 |
+| 14 | `focus-feedback-iteration.md` | 聚焦 - 反馈 - 迭代闭环 | 多步骤复习、计划、练习、批改、修复、总结或阶段工作流 |
+| 15 | `opt-in-reminders.md` | 明确 opt-in 的提醒和每日/每周知识归纳契约 | 用户明确要求启用、修改、停止或生成提醒/归纳卷 |
+| 16 | `adaptive-state.md` | 轻量掌握度、支架消退、前置阻塞和下一步推荐规则 | `/plan`, `/dashboard`, `/summary`, `/quiz`, `/fix`, reminders 或需要排序下一步时 |
 
 只有用户要求示例会话、输出样例、行为对比或回归参考时，才加载 `examples/`。
 
@@ -29,23 +31,23 @@
 |---------|-------------|-------------------|---------------------|
 | `/help` | 按阶段列出命令、用途和中文例句 | This index | - |
 | `/profile` | 建立课程画像，只问真正缺失的关键信息 | `course-profiles.md` | `course-templates.md`, `scripts/course_templates.py` |
-| `/materials` | 摄取上传/粘贴的课件、笔记、题库、往年题，更新画像并列出缺口 | `materials-ingestion.md` | `course-profiles.md`, `environment-adaptation.md` |
+| `/materials` | 摄取上传/粘贴的课件、笔记、题库、往年题；资料不足时先检索并标注来源等级 | `materials-ingestion.md` | `course-profiles.md`, `environment-adaptation.md`, `material-retrieval.md` |
 | `/source-map` | 基于来源建立资料覆盖图、重点来源、缺口和引用锚点 | `ima-adaptation.md` | `materials-ingestion.md`, `review-plans.md` |
 | `/paper` | 针对闭卷、开卷、半开卷等笔试优化复习 | `course-profiles.md` | `subject-adaptation.md` |
 | `/paper-analyze` | 分析往年题、样卷、作业题和题库，反推高频考点 | `exam-paper-analysis.md` | `ima-adaptation.md`, `course-profiles.md` |
 | `/teacher-emphasis` | 提取老师划重点、课堂强调、星标页、复习提纲和答疑信号 | `ima-adaptation.md` | `materials-ingestion.md`, `review-plans.md` |
 | `/lab` | 针对实验考、实验报告、操作考和 viva/口试优化复习 | `course-profiles.md` | `subject-adaptation.md` |
 | `/diagnose` | 用约 5 题快速定位跨章节薄弱点 | `question-types.md` | `course-profiles.md`, `practice-workflows.md` |
-| `/plan` | 生成可执行的 1/3/7/14/30 天复习计划 | `review-plans.md` | `course-profiles.md`, `subject-adaptation.md` |
+| `/plan` | 生成可执行的 1/3/7/14/30 天复习计划 | `review-plans.md` | `course-profiles.md`, `subject-adaptation.md`, `material-retrieval.md` |
 | `/map` | 输出知识图谱、考试地图、公式/定义和优先级 | `review-plans.md` | `course-profiles.md` |
 | `/explain [topic]` | 讲清一个概念：定义、直觉、例题、陷阱、回忆题 | `subject-adaptation.md` | `interaction-modes.md` |
 | `/socratic [topic]` | 苏格拉底式引导：一次一个问题，先提示再给答案 | `socratic-mode.md` | `interaction-modes.md`, `learning-strategies.md`, `subject-adaptation.md` |
 | `/feynman [topic]` | 费曼复述检查：学生讲，AI 挑漏项、追问并批改 | `feynman-mode.md` | `interaction-modes.md`, `subject-adaptation.md` |
-| `/quiz` | 自适应刷题，按表现升降难度 | `question-types.md` | `interaction-modes.md`, `subject-adaptation.md`, `course-profiles.md` |
+| `/quiz` | 自适应刷题，按表现升降难度 | `question-types.md` | `interaction-modes.md`, `subject-adaptation.md`, `course-profiles.md`, `adaptive-state.md` |
 | `/mock` | 生成限时模拟卷、答案和评分 rubric | `practice-workflows.md` | `question-types.md`, `course-profiles.md` |
 | `/oral` | 模拟口试/答辩，逐问追问并给反馈 | `practice-workflows.md` | `interaction-modes.md`, `subject-adaptation.md` |
-| `/grade` | 严格批改用户答案，定位扣分点和错因 | `question-types.md` | `course-profiles.md`, `practice-workflows.md`, `spaced-repetition.md` |
-| `/fix` | 针对薄弱点给微课、变式题和修复练习 | `practice-workflows.md` | `question-types.md`, `subject-adaptation.md` |
+| `/grade` | 严格批改用户答案，定位扣分点和错因 | `question-types.md` | `course-profiles.md`, `practice-workflows.md`, `spaced-repetition.md`, `adaptive-state.md` |
+| `/fix` | 针对薄弱点给微课、变式题和修复练习 | `practice-workflows.md` | `question-types.md`, `subject-adaptation.md`, `adaptive-state.md` |
 | `/flashcards` | 生成主动回忆卡片；需要时用 `scripts/export_flashcards.py` 导出 CSV/TSV | `SKILL.md` | `practice-workflows.md`, `learning-strategies.md`, `environment-adaptation.md` |
 | `/review-due` | 查看今天到期的间隔复习主题 | `spaced-repetition.md` | `course-profiles.md` |
 | `/group-quiz` | 组织多人小组问答、抢答或轮流讲解 | `group-study.md` | `question-types.md`, `subject-adaptation.md` |
@@ -54,7 +56,7 @@
 | `/code-demo` | 生成可运行代码演示、算法追踪或仿真 | `coding-demos.md` | `subject-adaptation.md`, `environment-adaptation.md` |
 | `/cram` | 进入考前冲刺/抢分模式，优先高收益内容 | `review-plans.md` | `interaction-modes.md` |
 | `/last-page` | 生成考前一页纸：公式、模板、陷阱、时间分配、交卷检查 | `review-plans.md` | `ima-adaptation.md`, `materials-ingestion.md` |
-| `/dashboard` | 生成复习仪表盘：状态、热力图、到期主题、风险和下一步 | `review-plans.md` | `ima-adaptation.md`, `spaced-repetition.md`, `course-profiles.md` |
+| `/dashboard` | 生成复习仪表盘：状态、热力图、到期主题、风险和下一步 | `review-plans.md` | `ima-adaptation.md`, `spaced-repetition.md`, `course-profiles.md`, `material-retrieval.md` |
 | `/resume` | 从粘贴的 Course Snapshot 恢复上下文 | `course-profiles.md` | - |
 | `/summary` | 输出本轮复盘：练了什么、正确率变化、弱点、SRS 和下一步 | `practice-workflows.md` | `course-profiles.md`, `spaced-repetition.md` |
 | `/wrong-note` | 从批改/刷题/模考反馈生成错题本并同步 SRS 摘要 | `wrong-note.md` | `question-types.md`, `spaced-repetition.md`, `ima-adaptation.md` |
@@ -139,7 +141,7 @@ For detailed fallbacks, load `environment-adaptation.md`. This compact table is 
 
 | Command | Agent shell | RAG notebook | Notes app | Plain chat |
 |---------|-------------|--------------|-----------|------------|
-| `/materials` | Read files; use PDF/PPT/text tooling when available | Cite from document context | Ingest Markdown notes, backlinks, tags, pasted excerpts | Ask student to paste chapter text or OCR screenshots |
+| `/materials` | Read files; use PDF/PPT/text tooling; search local workspace when material is missing | Cite from document context; search RAG corpus when thin | Ingest Markdown notes, backlinks, tags, pasted excerpts | Ask student to paste chapter text or output copyable search queries |
 | `/flashcards` | Write Markdown, then run `scripts/export_flashcards.py` | Emit Markdown cards inline | Emit Markdown cards with tags/backlinks | Emit Markdown cards inline |
 | `/visual` | Mermaid, HTML, Manim, Python plot, or image prompt as appropriate | Mermaid or ASCII inline | Mermaid/Markdown tables if supported; otherwise ASCII | ASCII diagrams or numbered step lists |
 | `/video` | Storyboard plus Manim/HTML Canvas plan or file when tools exist | Storyboard inline | Storyboard Markdown | Storyboard inline only; never call video API |
@@ -164,9 +166,11 @@ One line per reference; load on demand per the Load Order and Command Catalog ab
 | `staged-review-workflow.md` | Stage 1 core review pack, most-worth-studying chapter ranking, Stage 2 mock/weak-point repair workflow |
 | `focus-feedback-iteration.md` | Focus, action, feedback, and iteration contract for active review loops |
 | `opt-in-reminders.md` | Explicit opt-in reminders, proactive-message capability rules, daily/weekly knowledge digests, weak-point and memory-target summaries |
+| `adaptive-state.md` | Lightweight topic mastery bands, scaffolding fading, prerequisite blocking, and deterministic next-action ranking |
 | `ima-adaptation.md` | ima-native protocol: 14 ima tools, 5 native skills, source levels, note-first persistence, KB retrieval, reports, PPT, command overrides |
 | `chinese-routing.md` | Chinese natural-language trigger → command/workflow mapping |
 | `materials-ingestion.md` | PDF/PPT/note/past-paper ingestion, extraction targets, output contract, incremental + multi-file merge, per-host ingestion |
+| `material-retrieval.md` | Missing-material retrieval protocol, source levels, query groups, evidence table, and no-source fallback |
 | `subject-adaptation.md` | Per-subject rigor, notation, examples, visuals (Math, Physics, CS, Chem/Bio/Med, Econ/Law/History, Language, Design, Engineering, Clinical) |
 | `interaction-modes.md` | Teaching-mode selection rules, mixed modes, response contracts, mode switching |
 | `socratic-mode.md` | `/socratic` protocol: one question, hint ladder, assumptions, counterexamples, student summary, close |

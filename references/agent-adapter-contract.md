@@ -42,6 +42,11 @@ Use these tags in the registry and inventory:
 - `shell`: can run local commands or scripts.
 - `sandbox`: tool calls may require approval or may be scoped.
 - `search`: can retrieve web or workspace information.
+- `kb-search`: can search a user knowledge base or course-material repository.
+- `note-search`: can search user notes, memory-backed notes, or course pages.
+- `workspace-search`: can search local files by path or text.
+- `rag-search`: can search uploaded document context.
+- `web-search`: can search public web sources.
 - `kb-retrieval`: can search a knowledge base or uploaded corpus.
 - `citations`: can attach source references to retrieved content.
 - `memory`: can persist facts across sessions.
@@ -70,7 +75,9 @@ At runtime, detect capabilities in this order:
 ## State And Script Policy
 
 - If `file-write` and `shell` are both available, prefer deterministic scripts:
-  `scripts/snapshot.py`, `scripts/srs.py`, and `scripts/export_flashcards.py`.
+  `scripts/snapshot.py`, `scripts/recommend_next.py`,
+  `scripts/build_search_queries.py`, `scripts/srs.py`, and
+  `scripts/export_flashcards.py`.
 - If `file-write` exists but `shell` does not, save Markdown artifacts directly
   and do not mention script execution.
 - If neither `file-write` nor `shell` exists, emit copyable Markdown snapshots,

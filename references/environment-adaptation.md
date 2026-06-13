@@ -27,6 +27,9 @@ Before using host-specific behavior, check these capabilities:
 - **Write files**: Can it save snapshots, plans, flashcards, or generated artifacts?
 - **Run shell/scripts**: Can it execute `python scripts/...`?
 - **Retrieve/cite**: Does it have document retrieval and source citation?
+- **Search materials**: Can it search knowledge bases, notes, workspace files,
+  RAG documents, or the web (`kb-search`, `note-search`, `workspace-search`,
+  `rag-search`, `web-search`)?
 - **Read images/PDFs**: Can it inspect screenshots, note photos, PDFs, or OCR output?
 - **Render math**: Does the chat render LaTeX, Mermaid, tables, or HTML?
 - **Persist state**: Can it keep `.oh-my-teacher/` files, note blocks, or only inline summaries?
@@ -75,7 +78,9 @@ Adapters describe host capability and fallback behavior only. They must not rede
 
 | Need | Full capability | Downgrade |
 |---|---|---|
-| Persist course state | Save `.oh-my-teacher/snapshots/<slug>.md` with `scripts/snapshot.py` | Emit a copyable Current Course Snapshot block |
+| Persist course state | Save `.oh-my-teacher/snapshots/<slug>.md` and adaptive sidecar state with `scripts/snapshot.py` | Emit a copyable Current Course Snapshot block |
+| Rank next review action | Run `scripts/recommend_next.py` when adaptive state exists | Apply `references/adaptive-state.md` inline |
+| Retrieve missing course materials | Use `kb-search`, `note-search`, `workspace-search`, `rag-search`, or `web-search` per `references/material-retrieval.md` | Emit copyable query groups and a low-confidence scaffold |
 | Update SRS | Run `scripts/srs.py update` | Emit a Markdown SRS table and next review date |
 | Send daily/weekly reminders | Use confirmed proactive-message or scheduler tools after explicit opt-in | Generate the digest inline and emit a copyable Reminder Config block |
 | Export flashcards | Write Markdown then run `scripts/export_flashcards.py` | Emit card Markdown; ask user to export in their tool |
@@ -90,7 +95,8 @@ Adapters describe host capability and fallback behavior only. They must not rede
 
 ### Agent Shell
 
-- Prefer deterministic scripts for snapshots, SRS, and flashcards.
+- Prefer deterministic scripts for snapshots, lightweight next-action recommendations, SRS, and flashcards.
+- When materials are missing, search local workspace files first and use `scripts/build_search_queries.py` to prepare web or KB queries if search tools exist.
 - Save generated artifacts only when useful.
 - Before relying on a file, verify it exists and can be read.
 - Report command failures and switch to inline fallback rather than inventing output.
@@ -101,6 +107,7 @@ Adapters describe host capability and fallback behavior only. They must not rede
 - Cite sources when the host exposes citations.
 - Avoid asking the user to upload files again if the document is already in context.
 - If retrieval is thin, ask for a section title, page range, or pasted excerpt.
+- When no document is obvious, search the RAG corpus with the query groups from `references/material-retrieval.md`.
 
 ### ima Native
 
@@ -110,6 +117,7 @@ Adapters describe host capability and fallback behavior only. They must not rede
 - Use `use_skill name=ima-knowledge` for knowledge-base organization, `ima-note` for course home/wrong-note/SRS updates, `ima-report` for reports, and `ima-ppt` for PPT.
 - Run local Python only when `shell` is explicitly available and the script succeeds.
 - Label evidence as `课程资料确认`, `ima 知识库检索`, `笔记历史`, `通用课程推断`, or `需要确认`.
+- When the user gives only a course name, run the material retrieval flow before building a detailed plan.
 
 ### Notes App
 
@@ -127,6 +135,7 @@ Adapters describe host capability and fallback behavior only. They must not rede
 - Work one topic at a time to avoid context loss.
 - Provide copyable snapshots, SRS tables, flashcards, and plans.
 - Never say a file was saved, a script ran, or a document was read unless the host actually supports it.
+- Without retrieval tools, output copyable search queries and clearly label the course map as `通用课程推断`.
 
 ## Environment Probe
 

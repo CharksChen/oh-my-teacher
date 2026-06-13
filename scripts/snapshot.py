@@ -66,6 +66,28 @@ def state_json_path(workspace: Path) -> Path:
     return state_root(workspace) / "state.json"
 
 
+def read_state_json(workspace: Path) -> dict:
+    path = state_json_path(workspace)
+    if not path.exists():
+        return {}
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Invalid state JSON: {path}: {exc}") from exc
+    if not isinstance(value, dict):
+        raise SystemExit(f"State JSON must contain an object: {path}")
+    return value
+
+
+def deep_merge(base: dict, patch: dict) -> dict:
+    for key, value in patch.items():
+        if isinstance(value, dict) and isinstance(base.get(key), dict):
+            base[key] = deep_merge(dict(base[key]), value)
+        else:
+            base[key] = value
+    return base
+
+
 def parse_snapshot(text: str) -> dict[str, str]:
     fields: dict[str, str] = {}
     in_snapshot = False
@@ -86,11 +108,12 @@ def parse_snapshot(text: str) -> dict[str, str]:
 
 def write_state_json(workspace: Path, text: str, slug: str | None, path: Path) -> None:
     state_root(workspace).mkdir(parents=True, exist_ok=True)
-    state = {
+    state = read_state_json(workspace)
+    state.update({
         "active_slug": slug,
         "snapshot_path": str(path),
         "snapshot": parse_snapshot(text),
-    }
+    })
     state_json_path(workspace).write_text(
         json.dumps(state, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
@@ -210,6 +233,27 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_state_merge(args: argparse.Namespace) -> int:
+    """Deep-merge JSON from stdin into .oh-my-teacher/state.json."""
+    workspace = Path(args.workspace).resolve()
+    raw = sys.stdin.read()
+    if not raw.strip():
+        raise SystemExit("No JSON content received on stdin.")
+    try:
+        patch = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Invalid JSON patch: {exc}") from exc
+    if not isinstance(patch, dict):
+        raise SystemExit("State patch must be a JSON object.")
+
+    state_root(workspace).mkdir(parents=True, exist_ok=True)
+    state = deep_merge(read_state_json(workspace), patch)
+    path = state_json_path(workspace)
+    path.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(path)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Manage Oh My Teacher course snapshots.")
     parser.add_argument(
@@ -249,6 +293,9 @@ def build_parser() -> argparse.ArgumentParser:
     validate.add_argument("--active", action="store_true", help="Validate the active multi-course snapshot.")
     validate.add_argument("--strict", action="store_true", help="Return non-zero exit code if any required field is missing.")
     validate.set_defaults(func=cmd_validate)
+
+    state_merge = sub.add_parser("state-merge", help="Deep-merge JSON from stdin into .oh-my-teacher/state.json.")
+    state_merge.set_defaults(func=cmd_state_merge)
 
     return parser
 

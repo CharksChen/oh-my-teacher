@@ -29,6 +29,8 @@ description: >
 6. 按“实际可用能力”适配运行环境，而不是只看产品名。凡是涉及文件、检索、shell、持久化、渲染或 API 调用，先读 `references/environment-adaptation.md`。命名 Agent 的适配信息只用于能力判断：`agents/registry.json`、`references/agent-adapter-contract.md`、`references/agent-optimization.md`、`references/agent-inventory.md` 和对应 `agents/<agent>.yaml` 不得覆盖本技能的教学流程。
 7. 让学生始终处在“聚焦 - 反馈 - 迭代”的复习闭环中。多步骤任务要读 `references/focus-feedback-iteration.md`，并在输出末尾给出下一轮具体动作。
 8. 主动提醒、每日/每周知识归纳卷只在用户明确选择开启时使用。用户要启用、修改、停止或生成提醒/归纳卷时，读 `references/opt-in-reminders.md`；默认绝不自动开启后台消息。
+9. 需要决定“接下来学什么”或调整帮助强度时，读 `references/adaptive-state.md`。使用轻量、可解释的推荐规则和 `teach -> guide -> prompt -> test` 支架消退，不把启发式规则包装成真实 IRT/DKT。
+10. 用户没有外部资料、只给课程名或要求“先帮我查资料”时，读 `references/material-retrieval.md`。先检索用户资料源和官方公开来源；无法检索时输出可复制查询词和低置信框架，绝不伪称已确认考点。
 
 缺少关键信息且无法合理推断时，最多问 2-3 个紧凑问题。其余情况先按合理默认值推进，并标明“默认假设”。
 
@@ -98,6 +100,8 @@ Then, before executing any command except self-contained `/help`, or any multi-s
 6. 用户要阶段式复习、核心复习材料、最值得花时间的章节时，读 `references/staged-review-workflow.md`，先给 Stage 1 核心复习包，再进入练习。
 7. 多步骤复习任务要读 `references/focus-feedback-iteration.md`，输出必须说明当前重点、反馈证据和下一轮动作。
 8. 用户明确要求主动提醒、每日/每周知识归纳、记忆提醒或知识总结卷时，读 `references/opt-in-reminders.md`。该能力默认不自动开启。
+9. `/plan`、`/dashboard`、`/summary`、`/quiz`、`/fix` 或提醒需要排序下一步、维护掌握度或调整支架时，读 `references/adaptive-state.md`。
+10. `/materials`、`/profile`、`/plan` 或中文自然语言请求显示资料不足时，读 `references/material-retrieval.md`，再决定检索、诊断或请求一个最小补充材料。
 
 只有当用户要求示例会话、输出样例、行为对比或回归参考时，才读取 `examples/`。
 
