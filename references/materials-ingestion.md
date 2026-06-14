@@ -77,6 +77,8 @@ After `/materials`, produce this exact section structure so `/map`, `/plan`, and
 
 除非用户明确要求，不要在资料摄取后立刻生成整套模拟卷。先生成地图或计划，再进入练习。
 
+用户想把资料沉淀成可累积、可互链的课程知识库，而不是一次性总结时，进入 `references/course-wiki.md` 的 Ingest 流程，把抽取结果落成互联页面。
+
 For "most worth studying chapters", always combine exam-scope weight, past-paper frequency, and teacher-emphasis strength when those inputs exist. Use `P0` (must master), `P1` (focused breakthrough), and `P2` (understand / quick scan). If one input is missing, keep the table and mark that column as `unknown` rather than inventing values.
 
 ## Materials Missing or Too Thin

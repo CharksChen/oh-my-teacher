@@ -37,6 +37,13 @@
 | 给我一个复习仪表盘 | `/dashboard` |
 | 把知识库资料变成计划 | `/materials -> /source-map -> /plan` |
 | 把这些资料变成复习计划 | `/materials -> /source-map -> /plan` |
+| 把资料整理成知识库 | `/wiki` |
+| 建一个课程 wiki | `/wiki` |
+| 把课件沉淀成知识百科 | `/wiki` |
+| 在知识库里查一下这个 | `/wiki-ask` |
+| 根据知识库回答我 | `/wiki-ask` |
+| 检查一下知识库有没有遗漏 | `/wiki-lint` |
+| 知识库哪里有断链或缺口 | `/wiki-lint` |
 | 整理这些课件 | `/materials` |
 | 帮我读一下 PPT | `/materials` |
 | 帮我读一下 PDF | `/materials` |

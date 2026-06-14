@@ -2,6 +2,8 @@
 
 用于 `/wrong-note`，以及 `/grade`、`/quiz`、`/mock` 后的错题跟进。错题本不是收藏夹；每条错题必须能指导下一次修复和间隔复习。
 
+存在课程知识库时（见 `references/course-wiki.md`），每条错题同时作为一个错题页接入 wiki：从相关概念页用 `[[..]]` 双向链接，frontmatter 接上 SRS 主题，让错因沉淀进知识库而不是孤立存在。
+
 ## ima Workflow
 
 1. Start from a graded answer or wrong quiz/mock item.

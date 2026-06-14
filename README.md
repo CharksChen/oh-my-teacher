@@ -20,6 +20,7 @@
 - **复习计划**：生成 1/3/7/14/30 天计划、考点地图、考前一页纸和复习仪表盘。
 - **主动练习**：自适应 `/quiz`、限时 `/mock`、口试 `/oral`、小组 `/group-quiz`。
 - **严格批改**：按真实考试扣分逻辑指出错因、失分点、标准答案和补救练习。
+- **课程知识库**：把资料沉淀成持久、互相链接、可累积的课程 wiki（LLM Wiki），先查页面再带引用作答，并做结构体检。
 - **错题闭环**：生成错题本、错误类型分布、SRS 到期复习和下一轮修复任务。
 - **深度讲解**：支持苏格拉底引导、费曼复述、图示讲解和可运行代码演示。
 - **闪卡导出**：把复习卡片导出为 Anki/Quizlet 友好的 CSV/TSV。
@@ -50,6 +51,7 @@ oh-my-teacher/
 │   ├── practice-workflows.md # 模考、口试、修复、总结
 │   ├── spaced-repetition.md  # 间隔复习状态
 │   ├── wrong-note.md         # 错题本
+│   ├── course-wiki.md        # 课程知识库（LLM Wiki）
 │   ├── ima-adaptation.md     # ima 知识库/笔记/报告/PPT 适配
 │   └── ...
 ├── examples/                 # 示例会话和示例产物
@@ -57,6 +59,7 @@ oh-my-teacher/
     ├── export_flashcards.py  # Markdown 卡片 -> CSV/TSV
     ├── snapshot.py           # 课程快照保存/加载
     ├── srs.py                # 间隔复习状态管理
+    ├── wiki.py               # 课程知识库结构维护与体检
     ├── validate_skill.py     # 结构校验
     └── package_check.py      # 一键验证
 ```
@@ -68,6 +71,7 @@ oh-my-teacher/
 | 阶段 | 命令 |
 |------|------|
 | 建档与资料 | `/profile`, `/materials`, `/diagnose`, `/paper`, `/paper-analyze`, `/teacher-emphasis`, `/lab` |
+| 知识库 | `/wiki`, `/wiki-ask`, `/wiki-lint` |
 | 计划 | `/plan`, `/map`, `/last-page`, `/dashboard` |
 | 练习 | `/quiz`, `/mock`, `/oral`, `/group-quiz`, `/grade`, `/fix` |
 | 讲解 | `/explain`, `/socratic`, `/feynman`, `/visual`, `/video`, `/code-demo` |

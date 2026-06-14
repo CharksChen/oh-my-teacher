@@ -31,6 +31,7 @@ description: >
 8. 主动提醒、每日/每周知识归纳卷只在用户明确选择开启时使用。用户要启用、修改、停止或生成提醒/归纳卷时，读 `references/opt-in-reminders.md`；默认绝不自动开启后台消息。
 9. 需要决定“接下来学什么”或调整帮助强度时，读 `references/adaptive-state.md`。使用轻量、可解释的推荐规则和 `teach -> guide -> prompt -> test` 支架消退，不把启发式规则包装成真实 IRT/DKT。
 10. 用户没有外部资料、只给课程名或要求“先帮我查资料”时，读 `references/material-retrieval.md`。先检索用户资料源和官方公开来源；无法检索时输出可复制查询词和低置信框架，绝不伪称已确认考点。
+11. 用户要把资料沉淀成可累积、可互链的课程知识库（课程 wiki、知识百科、`/wiki`、`/wiki-ask`、`/wiki-lint`）时，读 `references/course-wiki.md`。维护不可变原始源 + 模型维护的互联页面，先查页面再合成带引用答案，并把新发现回填；绝不把通用推断写成已确认考点。
 
 缺少关键信息且无法合理推断时，最多问 2-3 个紧凑问题。其余情况先按合理默认值推进，并标明“默认假设”。
 
@@ -57,6 +58,7 @@ description: >
 | 阶段 | Commands |
 |------|----------|
 | 建档与资料 | `/profile`, `/materials`, `/source-map`, `/diagnose`, `/paper`, `/paper-analyze`, `/teacher-emphasis`, `/lab` |
+| 知识库 | `/wiki`, `/wiki-ask`, `/wiki-lint` |
 | 计划 | `/plan`, `/map`, `/last-page`, `/dashboard` |
 | 练习 | `/quiz`, `/mock`, `/oral`, `/grade`, `/fix`, `/group-quiz` |
 | 讲解 | `/explain`, `/socratic`, `/feynman`, `/visual`, `/video`, `/code-demo` |
@@ -89,6 +91,7 @@ Quick routing map（命令 → primary reference）：
 | `ima-adaptation.md` | `/source-map`, `/teacher-emphasis`, `/report`, `/ppt` |
 | `wrong-note.md` | `/wrong-note` |
 | `interaction-modes.md` | `/mode` |
+| `course-wiki.md` | `/wiki`, `/wiki-ask`, `/wiki-lint` |
 
 Then, before executing any command except self-contained `/help`, or any multi-step review task:
 
@@ -102,6 +105,7 @@ Then, before executing any command except self-contained `/help`, or any multi-s
 8. 用户明确要求主动提醒、每日/每周知识归纳、记忆提醒或知识总结卷时，读 `references/opt-in-reminders.md`。该能力默认不自动开启。
 9. `/plan`、`/dashboard`、`/summary`、`/quiz`、`/fix` 或提醒需要排序下一步、维护掌握度或调整支架时，读 `references/adaptive-state.md`。
 10. `/materials`、`/profile`、`/plan` 或中文自然语言请求显示资料不足时，读 `references/material-retrieval.md`，再决定检索、诊断或请求一个最小补充材料。
+11. `/wiki`、`/wiki-ask`、`/wiki-lint`，或用户要把资料整理成可累积、可互链的课程知识库/课程 wiki 时，读 `references/course-wiki.md`。Agent shell 中优先用 `scripts/wiki.py` 维护结构和体检。
 
 只有当用户要求示例会话、输出样例、行为对比或回归参考时，才读取 `examples/`。
 

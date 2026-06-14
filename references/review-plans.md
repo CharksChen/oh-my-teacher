@@ -4,6 +4,8 @@
 
 ## Study Map
 
+存在课程知识库时（见 `references/course-wiki.md`），优先从 wiki 的章节 MOC / `INDEX.md` 渲染知识树，而不是从零重建；`/map` 与 wiki 共享同一套页面与优先级。
+
 Produce:
 
 - 课程画像假设：考试形式、剩余时间、目标分、资料置信度。

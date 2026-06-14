@@ -22,6 +22,7 @@
 | 14 | `focus-feedback-iteration.md` | 聚焦 - 反馈 - 迭代闭环 | 多步骤复习、计划、练习、批改、修复、总结或阶段工作流 |
 | 15 | `opt-in-reminders.md` | 明确 opt-in 的提醒和每日/每周知识归纳契约 | 用户明确要求启用、修改、停止或生成提醒/归纳卷 |
 | 16 | `adaptive-state.md` | 轻量掌握度、支架消退、前置阻塞和下一步推荐规则 | `/plan`, `/dashboard`, `/summary`, `/quiz`, `/fix`, reminders 或需要排序下一步时 |
+| 17 | `course-wiki.md` | 课程知识库（LLM Wiki）：不可变原始源 + 互联页面 + Ingest/Query/Lint | `/wiki`, `/wiki-ask`, `/wiki-lint`，或用户要把资料沉淀成可累积、可互链的课程知识库 |
 
 只有用户要求示例会话、输出样例、行为对比或回归参考时，才加载 `examples/`。
 
@@ -63,6 +64,9 @@
 | `/report` | 在可用时通过 ima-report 生成阶段复盘或覆盖率报告 | `ima-adaptation.md` | `exam-paper-analysis.md`, `review-plans.md` |
 | `/ppt` | 在可用时通过 ima-ppt 生成考前冲刺或错题复盘 PPT | `ima-adaptation.md` | `review-plans.md`, `wrong-note.md` |
 | `/mode [mode-name]` | 显式切换当前任务的互动模式 | `interaction-modes.md` | - |
+| `/wiki` | 把资料摄取进课程知识库：建/改互联页面、更新 MOC（Ingest） | `course-wiki.md` | `materials-ingestion.md`, `staged-review-workflow.md`, `environment-adaptation.md` |
+| `/wiki-ask [question]` | 先查 wiki 页面再合成带引用答案，并把新发现回填成页面（Query） | `course-wiki.md` | `material-retrieval.md`, `ima-adaptation.md` |
+| `/wiki-lint` | 知识库体检：孤页、断链、缺来源、矛盾、考点覆盖缺口（Lint） | `course-wiki.md` | `exam-paper-analysis.md`, `spaced-repetition.md` |
 
 用户显式命令只覆盖当前任务的自动模式选择。除非用户要求保持某个模式，完成当前任务后回到自动选择。
 
@@ -86,6 +90,13 @@ When the user runs `/help`, use this exact structure:
 | /paper-analyze | 分析往年题和出题规律 |
 | /teacher-emphasis | 提取老师划重点 |
 | /lab | 针对实验考优化 |
+
+## 知识库
+| Command | Description |
+|---------|-------------|
+| /wiki | 把资料沉淀成互联课程知识库 |
+| /wiki-ask | 基于知识库提问并带引用作答 |
+| /wiki-lint | 知识库体检:孤页/断链/缺口 |
 
 ## 计划
 | Command | Description |
@@ -151,6 +162,9 @@ For detailed fallbacks, load `environment-adaptation.md`. This compact table is 
 | `/mock` | Write `mock.md` and `answer.md` when useful | Mock inline | Mock as Markdown note | Mock inline with rubric |
 | `/grade` | Read answer file and write graded artifact when useful | Grade inline with quotes/citations | Grade inline with `#错题` tags | Grade inline with quotes |
 | `/explain`, `/socratic`, `/feynman`, `/quiz`, `/oral`, `/fix`, `/group-quiz` | Conversational by default | Conversational by default | Markdown-native conversational output | Conversational by default |
+| `/wiki` | Build files under `.oh-my-teacher/wiki/`; run `scripts/wiki.py init/lint` | Synthesize wiki pages inline; cite document context | Native `[[links]]`, `#tags`, folders for sources/pages | Emit copyable single-page summary; accumulate per topic |
+| `/wiki-ask` | grep pages then answer with `[[page]]` + source citations | Search RAG corpus; cite pages and sources | Search backlinks/tags; answer with `[[page]]` | Answer from prior pasted pages; ask to paste more |
+| `/wiki-lint` | `scripts/wiki.py lint` then semantic check | Inline gap/contradiction check | Inline lint over vault pages | List likely orphans/gaps from the running summary |
 
 ## File Overview
 
@@ -167,6 +181,7 @@ One line per reference; load on demand per the Load Order and Command Catalog ab
 | `focus-feedback-iteration.md` | Focus, action, feedback, and iteration contract for active review loops |
 | `opt-in-reminders.md` | Explicit opt-in reminders, proactive-message capability rules, daily/weekly knowledge digests, weak-point and memory-target summaries |
 | `adaptive-state.md` | Lightweight topic mastery bands, scaffolding fading, prerequisite blocking, and deterministic next-action ranking |
+| `course-wiki.md` | Course wiki (LLM Wiki) protocol: immutable sources, interlinked pages, page taxonomy/template, Ingest/Query/Lint, integration hooks, per-host degradation |
 | `ima-adaptation.md` | ima-native protocol: 14 ima tools, 5 native skills, source levels, note-first persistence, KB retrieval, reports, PPT, command overrides |
 | `chinese-routing.md` | Chinese natural-language trigger → command/workflow mapping |
 | `materials-ingestion.md` | PDF/PPT/note/past-paper ingestion, extraction targets, output contract, incremental + multi-file merge, per-host ingestion |
